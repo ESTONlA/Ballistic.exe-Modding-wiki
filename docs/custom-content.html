@@ -9,6 +9,7 @@
   <script src="../assets/js/theme.js"></script>
   <link rel="stylesheet" href="../assets/css/site.css">
   <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
   <script src="../assets/js/site.js" defer></script>
 </head>
 <body data-page="custom-content" id="top">
@@ -24,12 +25,13 @@
 <h2 id="new-models-and-textures">New models and textures</h2><p>An external <code>.fbx</code> file is a source model, not a game-ready Unreal asset. A Lua script cannot simply use an FBX path as a normal skeletal mesh reference.</p><p>Proper mesh, material and animation integration generally needs compatible cooked assets or a dedicated runtime importer. This wiki does not provide an importer.</p>
 <h2 id="opening-the-game-in-unreal">Opening the game in Unreal</h2><p>The installed game contains cooked content, rather than the developer’s editable source project. Installing Unreal Editor does not restore the original Blueprints, levels or source assets.</p><p>The local executable reported the <code>UE5.7</code> release branch. That is useful context when investigating tools, but it does not establish that any specific editor patch will produce compatible content.</p>
 <h2 id="runtime-scene-checklist">Testing a runtime scene</h2><ul><li>Check mesh and material availability in the actual game build.</li><li>Test lighting and exposure in the world where you spawn objects.</li><li>Verify collision and a safe player spawn.</li><li>Keep references to the actors your mod owns.</li><li>Remove them when the scene closes or the world changes.</li></ul>
+<p>For a runtime prototype, start with <a href="ranges.html">Range menus &amp; travel</a> and <a href="runtime.html">Timers &amp; cleanup</a>. For distributing an asset-free Lua mod, see <a href="packaging.html">Packaging a Lua mod</a>.</p>
 <h2 id="further-reading">Further reading</h2><p><a href="https://github.com/Dmgvol/UE_Modding">Dmgvol’s UE modding guides</a> cover several Unreal modding approaches. Start with <a href="tools.html">Tools &amp; resources</a> for the loader and archive-inspection references used here.</p>
       </article>
       <div id="page-end"></div>
     </main>
     <aside id="page-toc"></aside>
   </div>
-  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> · <a href="installation.html">Installation</a> · <a href="first-mod.html">First mod</a> · <a href="hooks.html">Hooks</a> · <a href="objects.html">Objects</a> · <a href="debugging.html">Debugging</a> · <a href="paths.html">Paths</a> · <a href="custom-content.html">Custom content</a> · <a href="tools.html">Tools</a></p></noscript>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> ? <a href="installation.html">Installing UE4SS</a> ? <a href="first-mod.html">Your first mod</a> ? <a href="hooks.html">Working with hooks</a> ? <a href="objects.html">Finding game objects</a> ? <a href="runtime.html">Timers &amp; cleanup</a> ? <a href="data-tables.html">Reading data tables</a> ? <a href="debugging.html">Debugging</a> ? <a href="weapons.html">Weapon assemblies</a> ? <a href="attachments.html">Attachments &amp; rails</a> ? <a href="weapon-stats.html">Weapon stats</a> ? <a href="ballistics.html">Shots &amp; ballistics</a> ? <a href="targets.html">Finding &amp; tracking targets</a> ? <a href="scoring.html">Hits &amp; scoring</a> ? <a href="ranges.html">Range menus &amp; travel</a> ? <a href="workshop-ui.html">Workshop UI</a> ? <a href="progression.html">Ownership &amp; unlocks</a> ? <a href="saves.html">Reading &amp; backing up saves</a> ? <a href="multiplayer.html">Multiplayer architecture</a> ? <a href="paths.html">Game paths &amp; classes</a> ? <a href="custom-content.html">Custom content</a> ? <a href="packaging.html">Packaging a Lua mod</a> ? <a href="compatibility.html">Checking game updates</a> ? <a href="coverage.html">Coverage &amp; testing notes</a> ? <a href="tools.html">Tools &amp; resources</a></p></noscript>
 </body>
 </html>

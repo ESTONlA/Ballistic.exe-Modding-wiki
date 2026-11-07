@@ -19,7 +19,7 @@ Write like you’re explaining it to another modder. Get to the steps, use real 
 - Keep one main heading per page and give each section heading a unique `id`.
 - Use relative links between guides, such as `hooks.html#find-a-function`.
 - Keep styles in the CSS file and shared behaviour in JavaScript.
-- When adding a page, update the sidebar list in `assets/js/site.js` and the expected page count in `tools/build.mjs`. Run the check again to rebuild the search index.
+- When adding a page, add its filename, title and group to `assets/js/navigation.js`. The build checks that the page and navigation agree, then rebuilds search.
 - Don’t edit `search-index.js` or `dist/` by hand; they’re generated.
 
 ## Game-specific findings

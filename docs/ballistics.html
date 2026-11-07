@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shots &amp; ballistics | Ballistic Modding Wiki</title>
+  <meta name="description" content="Trace shot creation, bullet identities and impact callbacks.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="ballistics" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Shots &amp; ballistics</h1><p class="lead">A fired shot, a projectile impact and a valid target hit are separate events.</p>
+<h2 id="the-shot-pipeline">The shot pipeline</h2>
+<div class="table-scroll"><table><thead><tr><th>Event</th><th>What it tells you</th></tr></thead><tbody><tr><td><code>A_WeaponBase_C:ProcessBulletFired</code></td><td>Weapon firing event with cartridge, barrel and created bullet information.</td></tr><tr><td><code>C_BulletBase:RegisterHit</code></td><td>A bullet reported impact information.</td></tr><tr><td><code>TargetBase_C:Hit</code></td><td>Target hit path with projectile attribution in the inspected signature.</td></tr><tr><td><code>TargetBase_C:OnHit</code></td><td>Target reports validity, energy, velocity and bonus-related flags.</td></tr></tbody></table></div>
+<p>A projectile can strike non-target geometry. A target callback can be invalid. A shot counter and a scoring system should not increment from the same undifferentiated “hit” event.</p>
+<h2 id="observe-firing">Observe firing</h2><p>Once the Blueprint function is loaded, a read-only hook can establish when it runs:</p>
+<pre data-title="Logging callback; use the discovery guard from Working with hooks" data-language="lua"><code>local path = &quot;/Game/BlueprintLogic/Weapons/A_WeaponBase.A_WeaponBase_C:ProcessBulletFired&quot;
+
+-- Register once, after StaticFindObject(path) is valid.
+RegisterHook(path, function(context)
+    local gun = context:get()
+    if gun and gun:IsValid() then
+        print(&quot;[MyMod] Fired: &quot; .. gun:GetFullName() .. &quot;\n&quot;)
+    end
+end)</code></pre>
+<h2 id="observed-shot-arguments">Observed shot arguments</h2><p>After the context, the inspected firing signature has <code>Cartridge</code>, bullet and gas recoil forces, recoil location/direction, <code>Barrel</code>, powder amount, exit pressure, powder type and a <code>Bullet</code> array. Read the exact signature and unwrap parameters according to their type before using them.</p><p>Do not assume one event always produces exactly one bullet actor. Keep a shot ID and map each resulting projectile to it.</p>
+<h2 id="impacts-and-units">Impacts, energy and units</h2><p>The target’s <code>OnHit</code> signature contains <code>HitEnergy</code> and <code>HitVelocity</code>, but a field name alone does not establish the units or all conversions used by the game. Record the raw values and compare controlled shots before labelling them in an overlay.</p><p>Don’t replace the game’s trajectory with a camera ray and call it the actual bullet path. A straight line can be useful as a cosmetic tracer, but it does not reproduce drop, penetration or ricochets.</p>
+<h2 id="what-is-not-documented">What is not documented here</h2><p>This guide maps events, not the complete internal ballistics model. Cartridge construction, powder curves, drag coefficients, penetration materials and every ammunition unlock rule still need dedicated research.</p><p>For score handling, continue to <a href="scoring.html">Hits &amp; scoring</a>.</p>
+<h2 id="tested-scope">What was checked</h2><p>Firing and impact hooks resolved in local range checks; native target hit callbacks were also exercised. No full trajectory or ammunition-physics replacement has been validated. The examples describe the local Windows demo setup. See <a href="compatibility.html">Checking game updates</a> before using them on another build.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> ? <a href="installation.html">Installing UE4SS</a> ? <a href="first-mod.html">Your first mod</a> ? <a href="hooks.html">Working with hooks</a> ? <a href="objects.html">Finding game objects</a> ? <a href="runtime.html">Timers &amp; cleanup</a> ? <a href="data-tables.html">Reading data tables</a> ? <a href="debugging.html">Debugging</a> ? <a href="weapons.html">Weapon assemblies</a> ? <a href="attachments.html">Attachments &amp; rails</a> ? <a href="weapon-stats.html">Weapon stats</a> ? <a href="ballistics.html">Shots &amp; ballistics</a> ? <a href="targets.html">Finding &amp; tracking targets</a> ? <a href="scoring.html">Hits &amp; scoring</a> ? <a href="ranges.html">Range menus &amp; travel</a> ? <a href="workshop-ui.html">Workshop UI</a> ? <a href="progression.html">Ownership &amp; unlocks</a> ? <a href="saves.html">Reading &amp; backing up saves</a> ? <a href="multiplayer.html">Multiplayer architecture</a> ? <a href="paths.html">Game paths &amp; classes</a> ? <a href="custom-content.html">Custom content</a> ? <a href="packaging.html">Packaging a Lua mod</a> ? <a href="compatibility.html">Checking game updates</a> ? <a href="coverage.html">Coverage &amp; testing notes</a> ? <a href="tools.html">Tools &amp; resources</a></p></noscript>
+</body>
+</html>

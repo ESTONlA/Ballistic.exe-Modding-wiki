@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Weapon assemblies | Ballistic Modding Wiki</title>
+  <meta name="description" content="Follow equipped weapons, child actors and loadout templates.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="weapons" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Weapon assemblies</h1><p class="lead">A visible gun is an assembly of actors and components, not necessarily one mesh.</p>
+<h2 id="find-the-equipped-weapon">Find the equipped weapon</h2><p>In a range, the local pawn exposes <code>EquippedWeapon</code>. The workshop uses its own displayed weapon reference, so don’t expect the range pawn to identify the gun on the workbench.</p>
+<pre data-title="Read the local range weapon; choose an unused key" data-language="lua"><code>local H = require(&quot;UEHelpers&quot;)
+
+RegisterKeyBind(Key.F9, function()
+    ExecuteInGameThread(function()
+        local pc = H.GetPlayerController()
+        if not pc or not pc:IsValid() then return end
+        local pawn = pc:K2_GetPawn()
+        if not pawn or not pawn:IsValid() then return end
+        local gun = pawn.EquippedWeapon
+        if not gun or not gun:IsValid() then return end
+
+        print(&quot;[MyMod] Equipped: &quot; .. gun:GetFullName() .. &quot;\n&quot;)
+    end)
+end</code></pre>
+<h2 id="parts-and-components">Parts and components</h2><p>Observed weapon classes include <code>C_WeaponBase</code>, <code>C_WeaponPart</code> and the Blueprint <code>A_WeaponBase_C</code>. Parts expose a <code>ParentWeapon</code> reference. ChildActorComponents can own attached part actors, which can have their own descendants.</p><p>Enumerate the assembly before changing it. A core barrel, a fitted rail and a nested foregrip can live at different depths. Reading just the root actor’s mesh misses much of the weapon.</p>
+<pre data-title="Inside the callback above, after gun is valid" data-language="lua"><code>local children = {}
+gun:GetAllChildActors(children, true)
+for i = 1, math.min(#children, 128) do
+    local child = children[i]
+    if child and child:IsValid() then
+        print(&quot;[MyMod] Part: &quot; .. child:GetFullName() .. &quot;\n&quot;)
+    end
+end</code></pre>
+<h2 id="templates-and-live-actors">Templates are different from live actors</h2><p><code>CurrentWeaponTemplate</code> records a selected assembly. A spawned weapon is the live actor built from it. Changing the visible actor alone does not establish that the saved template changed, and changing a template does not automatically refresh every existing actor.</p><p>The observed template has separate weapon-class, main-part, attachment and grip data. The generated field names have suffixes; inspect the current struct rather than copying offsets.</p>
+<h2 id="visible-does-not-mean-usable">Visible doesn’t mean usable</h2><p>A mesh proxy can show another player’s gun without implementing its firing mechanism. A usable gun also needs the correct actor class, parts, ammunition, ownership and input path.</p><p>Test local use separately from remote appearance. Likewise, hiding a source gun and drawing a replacement mesh does not make a new inventory weapon.</p>
+<h2 id="test-an-assembly">Test an assembly</h2><ol><li>Record the selected template and visible part tree.</li><li>Change one part and confirm only the expected branch changes.</li><li>Leave the workbench and test handling and firing.</li><li>Travel to a range and back.</li><li>Restart and check the saved assembly separately.</li></ol>
+<h2 id="tested-scope">What was checked</h2><p>EquippedWeapon lookup and assembled mesh capture were used in local range fixtures. Arbitrary replacement weapons, imported models and every possible assembly are not verified. The examples describe the local Windows demo setup. See <a href="compatibility.html">Checking game updates</a> before using them on another build.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> ? <a href="installation.html">Installing UE4SS</a> ? <a href="first-mod.html">Your first mod</a> ? <a href="hooks.html">Working with hooks</a> ? <a href="objects.html">Finding game objects</a> ? <a href="runtime.html">Timers &amp; cleanup</a> ? <a href="data-tables.html">Reading data tables</a> ? <a href="debugging.html">Debugging</a> ? <a href="weapons.html">Weapon assemblies</a> ? <a href="attachments.html">Attachments &amp; rails</a> ? <a href="weapon-stats.html">Weapon stats</a> ? <a href="ballistics.html">Shots &amp; ballistics</a> ? <a href="targets.html">Finding &amp; tracking targets</a> ? <a href="scoring.html">Hits &amp; scoring</a> ? <a href="ranges.html">Range menus &amp; travel</a> ? <a href="workshop-ui.html">Workshop UI</a> ? <a href="progression.html">Ownership &amp; unlocks</a> ? <a href="saves.html">Reading &amp; backing up saves</a> ? <a href="multiplayer.html">Multiplayer architecture</a> ? <a href="paths.html">Game paths &amp; classes</a> ? <a href="custom-content.html">Custom content</a> ? <a href="packaging.html">Packaging a Lua mod</a> ? <a href="compatibility.html">Checking game updates</a> ? <a href="coverage.html">Coverage &amp; testing notes</a> ? <a href="tools.html">Tools &amp; resources</a></p></noscript>
+</body>
+</html>

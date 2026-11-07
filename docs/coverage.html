@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Coverage &amp; testing notes | Ballistic Modding Wiki</title>
+  <meta name="description" content="See which game systems have guides and how strong the underlying checks are.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="coverage" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Coverage &amp; testing notes</h1><p class="lead">What the wiki explains, what was exercised, and what still needs research.</p>
+<h2 id="how-to-read-coverage">How to read coverage</h2><p>The README percentage is a rough estimate of game-specific documentation, not a measured fraction of all source code, assets or possible mods. Adding setup pages does not establish that more gameplay systems are fully understood.</p><p>The useful measure is whether a guide gives you a reliable entry point, an example and a clear limit. The table below makes those limits visible without treating every topic as complete.</p>
+<h2 id="system-coverage">System coverage</h2>
+<div class="table-scroll"><table><thead><tr><th>Area</th><th>Covered here</th><th>Still missing</th></tr></thead><tbody><tr><td>Lua setup &amp; lifecycle</td><td>Loader layout, hooks, discovery, threading, cleanup and debugging.</td><td>Every loader version and complete API reference.</td></tr><tr><td>Weapons &amp; attachments</td><td>Assembly references, rail nesting, native removal and selected stat fields.</td><td>Every weapon, assembly rule and save/reload combination.</td></tr><tr><td>Shots &amp; ammunition</td><td>Shot, projectile-impact and target callback entry points.</td><td>Complete cartridge construction and ballistic equations.</td></tr><tr><td>Targets &amp; scoring</td><td>Discovery, component motion, valid hits, deduplication and custom round design.</td><td>All target types, rewards and full progression rules.</td></tr><tr><td>Workshop UI</td><td>Native button construction, canvas layout and edit-mode lifecycle.</td><td>Every menu, controller navigation and all accessibility paths.</td></tr><tr><td>Ranges</td><td>Table rows, unlock checks, pool travel and restart workflow.</td><td>A custom cooked-map pipeline and all full-game destinations.</td></tr><tr><td>Saves &amp; ownership</td><td>Known slot/class, read-only loading and container distinctions.</td><td>Full save schema, reliable owned-only filter and all migration cases.</td></tr><tr><td>Multiplayer</td><td>State/event separation, authority, visual proxies and interruption handling.</td><td>A general-purpose SDK and completed real-peer testing of every feature.</td></tr></tbody></table></div>
+<h2 id="evidence-levels">Evidence levels</h2><ul><li><strong>Found in a dump:</strong> the name or field existed in the inspected build.</li><li><strong>Native fixture:</strong> an operation ran against actual engine objects in an isolated test.</li><li><strong>Local gameplay check:</strong> the feature was exercised in the game’s menu or range.</li><li><strong>Real peer check:</strong> separate PCs/accounts performed the scenario together.</li></ul><p>These levels are different, not interchangeable. A native fixture does not automatically prove a player’s saved assembly or an internet session works.</p>
+<h2 id="known-open-questions">Known open questions</h2><p>The exact owned-only attachment rule remains unresolved. A reported rail-removal stat penalty was not reproduced by the recorded synthetic fixture. A visible custom range card did not establish a new map, and runtime-scene lighting experiments did not produce a finished custom range.</p><p>The <a href="ballistics.html">ballistics</a>, <a href="progression.html">ownership</a> and <a href="multiplayer.html">multiplayer</a> guides explain the relevant boundaries in more detail.</p>
+<h2 id="add-a-finding">Add a finding</h2><p>Record the game build, loader version, exact object/function and steps you tested. A small reproducible result is more useful than a long list of untested classes. Follow the repository’s CONTRIBUTING.md when opening a documentation PR.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> ? <a href="installation.html">Installing UE4SS</a> ? <a href="first-mod.html">Your first mod</a> ? <a href="hooks.html">Working with hooks</a> ? <a href="objects.html">Finding game objects</a> ? <a href="runtime.html">Timers &amp; cleanup</a> ? <a href="data-tables.html">Reading data tables</a> ? <a href="debugging.html">Debugging</a> ? <a href="weapons.html">Weapon assemblies</a> ? <a href="attachments.html">Attachments &amp; rails</a> ? <a href="weapon-stats.html">Weapon stats</a> ? <a href="ballistics.html">Shots &amp; ballistics</a> ? <a href="targets.html">Finding &amp; tracking targets</a> ? <a href="scoring.html">Hits &amp; scoring</a> ? <a href="ranges.html">Range menus &amp; travel</a> ? <a href="workshop-ui.html">Workshop UI</a> ? <a href="progression.html">Ownership &amp; unlocks</a> ? <a href="saves.html">Reading &amp; backing up saves</a> ? <a href="multiplayer.html">Multiplayer architecture</a> ? <a href="paths.html">Game paths &amp; classes</a> ? <a href="custom-content.html">Custom content</a> ? <a href="packaging.html">Packaging a Lua mod</a> ? <a href="compatibility.html">Checking game updates</a> ? <a href="coverage.html">Coverage &amp; testing notes</a> ? <a href="tools.html">Tools &amp; resources</a></p></noscript>
+</body>
+</html>

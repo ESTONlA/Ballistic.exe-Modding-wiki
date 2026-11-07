@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ownership &amp; unlocks | Ballistic Modding Wiki</title>
+  <meta name="description" content="Distinguish bought parts, unlocked content, saved templates and visible menus.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="progression" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Ownership &amp; unlocks</h1><p class="lead">“Visible”, “unlocked”, “purchased” and “fitted” are different states.</p>
+<h2 id="the-relevant-containers">The relevant containers</h2>
+<div class="table-scroll"><table><thead><tr><th>Game-instance field</th><th>Observed representation</th></tr></thead><tbody><tr><td><code>PurchasedParts</code></td><td>Set of soft class references for purchased parts.</td></tr><tr><td><code>UnlockedWeapons</code></td><td>Array of soft weapon-class references.</td></tr><tr><td><code>UnlockedRanges</code></td><td>Array of range row names.</td></tr><tr><td><code>SavedWeaponTemplates</code></td><td>Map containing saved weapon assemblies.</td></tr></tbody></table></div>
+<p>A template can contain part paths that aren’t matched by a purchased-set-only check. That does not prove those paths all represent independently owned, currently available attachments.</p>
+<h2 id="why-simple-filters-fail">Why simple filters fail</h2><p>Three local attachment-menu experiments illustrate the problem:</p><ul><li>A button-enabled check let every entry through, so enabled state did not express ownership.</li><li>PurchasedParts alone matched far fewer menu entries than the player expected.</li><li>A union of purchased and saved-template paths still missed expected choices in the live menu.</li></ul><p>Those filters were not a completed ownership API. They were removed from the stable expanded catalog.</p>
+<h2 id="match-reference-types">Match reference types</h2><p>Passing a loaded UClass directly to a soft-reference set caused a native crash in an earlier filter. An isolated class-to-soft-reference conversion probe was safe for one unrelated class, but that did not validate every menu membership check.</p><p>Inspect the stored type, the API’s expected type and the exact path form. Package paths, object paths and generated Blueprint class paths are related but not identical strings.</p>
+<h2 id="design-an-owned-only-menu">Design an owned-only menu</h2><ol><li>Define whether “owned” includes default, bought and currently fitted parts.</li><li>Start with a small set of attachments whose ownership the player can confirm.</li><li>Compare those parts with the game’s normal menu.</li><li>Use stable identifiers and explain each exclusion in a diagnostic log.</li><li>Test pagination after filtering, including an empty result and a single page.</li></ol><p>Do not present “we found many save paths” as proof the filter is correct. The list the player can actually select is the test that matters.</p>
+<h2 id="unlocking-content">Unlocking content</h2><p>Adding an unlocked row name in memory can make a menu card appear. It doesn’t establish permanent progression, the presence of the associated map, or correct save persistence. A production unlock mod needs those checks separately.</p>
+<h2 id="tested-scope">What was checked</h2><p>The container types and failed filtering outcomes are recorded local observations. A complete reliable owned-only attachment filter remains unresolved. The examples describe the local Windows demo setup. See <a href="compatibility.html">Checking game updates</a> before using them on another build.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> ? <a href="installation.html">Installing UE4SS</a> ? <a href="first-mod.html">Your first mod</a> ? <a href="hooks.html">Working with hooks</a> ? <a href="objects.html">Finding game objects</a> ? <a href="runtime.html">Timers &amp; cleanup</a> ? <a href="data-tables.html">Reading data tables</a> ? <a href="debugging.html">Debugging</a> ? <a href="weapons.html">Weapon assemblies</a> ? <a href="attachments.html">Attachments &amp; rails</a> ? <a href="weapon-stats.html">Weapon stats</a> ? <a href="ballistics.html">Shots &amp; ballistics</a> ? <a href="targets.html">Finding &amp; tracking targets</a> ? <a href="scoring.html">Hits &amp; scoring</a> ? <a href="ranges.html">Range menus &amp; travel</a> ? <a href="workshop-ui.html">Workshop UI</a> ? <a href="progression.html">Ownership &amp; unlocks</a> ? <a href="saves.html">Reading &amp; backing up saves</a> ? <a href="multiplayer.html">Multiplayer architecture</a> ? <a href="paths.html">Game paths &amp; classes</a> ? <a href="custom-content.html">Custom content</a> ? <a href="packaging.html">Packaging a Lua mod</a> ? <a href="compatibility.html">Checking game updates</a> ? <a href="coverage.html">Coverage &amp; testing notes</a> ? <a href="tools.html">Tools &amp; resources</a></p></noscript>
+</body>
+</html>

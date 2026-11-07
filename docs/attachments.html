@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Attachments &amp; rails | Ballistic Modding Wiki</title>
+  <meta name="description" content="Understand mount lookup, rail nesting and the native fit/remove action.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="attachments" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Attachments &amp; rails</h1><p class="lead">Separate the attachment list, the mounting point and the part fitted to it.</p>
+<h2 id="the-attachment-flow">The attachment flow</h2><p>The workbench creates <code>Attach_POI_C</code> widgets for attachment points. A point references its <code>AttachPoint</code> component, the current weapon and a popup list. Compatibility lookup decides which attachment classes that list can offer.</p>
+<div class="table-scroll"><table><thead><tr><th>Entry point</th><th>Observed role</th></tr></thead><tbody><tr><td><code>GetCompatibleMountsRecursive</code></td><td>Resolve compatible mount definitions.</td></tr><tr><td><code>OnGetUserMenuContent</code></td><td>Build the attachment popup.</td></tr><tr><td><code>SetupAttachment</code></td><td>Apply a class or remove a fitted part.</td></tr><tr><td><code>AttachPoint.ChildActor</code></td><td>The actor currently fitted at that point.</td></tr></tbody></table></div>
+<h2 id="nested-rails">Nested rails</h2><p>A rail can add mounting points of its own. A grip fitted to the rail is a descendant of that rail, not necessarily a direct child of the base weapon. Removing a parent can invalidate the child actor and its UI at the same time.</p><p>When iterating points during a clear operation, reacquire the current point list after each change. Don’t keep using an old list after the workbench rebuilds it.</p>
+<h2 id="fit-and-remove">Fit and remove through the game</h2><p>For a valid live attachment-point widget, the native action takes a class reference to fit a part. Passing <code>nil</code> removed it in local tests:</p>
+<pre data-title="Removal action; test on a disposable assembly" data-language="lua"><code>-- Context: poi is a valid live Attach_POI widget.
+-- This changes the assembly; it is not an inspection call.
+poi:SetupAttachment(nil)</code></pre>
+<p>Let the game handle default-part behaviour and its refresh chain. Directly destroying a child actor bypasses that UI action and may leave the template or derived stats out of date.</p>
+<h2 id="compatibility-is-not-ownership">Compatibility isn’t ownership</h2><p>A part can be mount-compatible but not bought. A shop entry can be visible but locked. A saved assembly may contain a part that a purchased-set-only check misses. Keep these questions separate; see <a href="progression.html">Ownership &amp; unlocks</a>.</p>
+<h2 id="test-repeated-edits">Test repeated edits</h2><p>Record stats before fitting, after fitting and after removal. Repeat with the same rail, then try removing the rail while a child part is still mounted. Check that a cancelled operation doesn’t remove a part from a newly selected gun.</p><p>For a stat report, keep the exact weapon, rail and child class names. A vague “negative stat” report is not enough to decide whether an extra subtraction occurred.</p>
+<h2 id="tested-scope">What was checked</h2><p>Single native removals, synthetic three-point clear batches and rebuilding/cancellation guards passed local fixtures. These do not prove every real fitted assembly saves and reloads correctly. The examples describe the local Windows demo setup. See <a href="compatibility.html">Checking game updates</a> before using them on another build.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> ? <a href="installation.html">Installing UE4SS</a> ? <a href="first-mod.html">Your first mod</a> ? <a href="hooks.html">Working with hooks</a> ? <a href="objects.html">Finding game objects</a> ? <a href="runtime.html">Timers &amp; cleanup</a> ? <a href="data-tables.html">Reading data tables</a> ? <a href="debugging.html">Debugging</a> ? <a href="weapons.html">Weapon assemblies</a> ? <a href="attachments.html">Attachments &amp; rails</a> ? <a href="weapon-stats.html">Weapon stats</a> ? <a href="ballistics.html">Shots &amp; ballistics</a> ? <a href="targets.html">Finding &amp; tracking targets</a> ? <a href="scoring.html">Hits &amp; scoring</a> ? <a href="ranges.html">Range menus &amp; travel</a> ? <a href="workshop-ui.html">Workshop UI</a> ? <a href="progression.html">Ownership &amp; unlocks</a> ? <a href="saves.html">Reading &amp; backing up saves</a> ? <a href="multiplayer.html">Multiplayer architecture</a> ? <a href="paths.html">Game paths &amp; classes</a> ? <a href="custom-content.html">Custom content</a> ? <a href="packaging.html">Packaging a Lua mod</a> ? <a href="compatibility.html">Checking game updates</a> ? <a href="coverage.html">Coverage &amp; testing notes</a> ? <a href="tools.html">Tools &amp; resources</a></p></noscript>
+</body>
+</html>

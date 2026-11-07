@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reading &amp; backing up saves | Ballistic Modding Wiki</title>
+  <meta name="description" content="Read the save slot, back it up and separate persisted data from live state.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="saves" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Reading &amp; backing up saves</h1><p class="lead">Start read-only. A live game instance and a save file are not the same snapshot.</p>
+<h2 id="save-location">Save location</h2><p>The local demo uses <code>%LOCALAPPDATA%/Ballistic/Saved/SaveGames/BallisticDemo.sav</code>. Close the game and copy the save folder somewhere separate before an experiment that can change progression or assemblies.</p><p>Keep backups out of your mod release and out of a public repository. A useful backup is a dated copy you can identify and restore, not a file overwritten on every test.</p>
+<h2 id="load-without-applying">Load without applying</h2><p>GameplayStatics can load the persisted slot into a save object. Loading it for inspection is different from replacing the game instance’s active state:</p>
+<pre data-title="Read-only slot inspection; no save or apply call" data-language="lua"><code>local H = require(&quot;UEHelpers&quot;)
+
+ExecuteInGameThread(function()
+    local viewport = H.GetGameViewportClient()
+    if not viewport or not viewport:IsValid() then return end
+    local world = viewport:GetWorld()
+    if not world or not world:IsValid() then return end
+    local gameplay = StaticFindObject(&quot;/Script/Engine.Default__GameplayStatics&quot;)
+    local instance = gameplay:GetGameInstance(world)
+    if not instance or not instance:IsValid() then return end
+    local save = gameplay:LoadGameFromSlot(&quot;BallisticDemo&quot;, instance.UserIndex)
+    if save and save:IsValid() then
+        print(&quot;[MyMod] Save class: &quot; .. save:GetClass():GetFullName() .. &quot;\n&quot;)
+    end
+end</code></pre>
+<h2 id="known-save-class">Known save class</h2>
+<pre data-title="Observed Blueprint save class" data-language="text"><code>/Game/BlueprintLogic/Core/Game/Save/BallisticSaveGame.BallisticSaveGame_C</code></pre>
+<p>Do not assume that copying properties from one object to another is a complete restore. The local save-service code also refreshes game-instance data and invalidates selected loadouts and cached range lists after applying a snapshot.</p>
+<h2 id="snapshot-versus-live-state">Snapshot versus live state</h2><p>A file copy contains the last persisted state. Unsaved workbench edits or in-memory progression can differ. “Host save to guest” is a one-way snapshot transfer unless you explicitly implement a merge or ongoing replication.</p><p>A sharing feature should distinguish accepting a download from applying it. Bind the final confirmation to the exact peer and transfer, reject incompatible data, back up the guest’s original file, and handle failed loads with a recovery path.</p>
+<h2 id="verify-a-save-feature">Verify a save feature</h2><p>Use disposable profiles for write tests. Record a file hash before a read-only probe and compare it afterwards. For a restore feature, test a controlled backup/apply/restore cycle and then restart the game. A success message from a copy operation does not prove the game can load the result.</p>
+<h2 id="tested-scope">What was checked</h2><p>Read-only slot loading and native export checks ran locally. Local save-sharing code exists, but real two-PC guest application was not verified in the recorded test pass. The examples describe the local Windows demo setup. See <a href="compatibility.html">Checking game updates</a> before using them on another build.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> ? <a href="installation.html">Installing UE4SS</a> ? <a href="first-mod.html">Your first mod</a> ? <a href="hooks.html">Working with hooks</a> ? <a href="objects.html">Finding game objects</a> ? <a href="runtime.html">Timers &amp; cleanup</a> ? <a href="data-tables.html">Reading data tables</a> ? <a href="debugging.html">Debugging</a> ? <a href="weapons.html">Weapon assemblies</a> ? <a href="attachments.html">Attachments &amp; rails</a> ? <a href="weapon-stats.html">Weapon stats</a> ? <a href="ballistics.html">Shots &amp; ballistics</a> ? <a href="targets.html">Finding &amp; tracking targets</a> ? <a href="scoring.html">Hits &amp; scoring</a> ? <a href="ranges.html">Range menus &amp; travel</a> ? <a href="workshop-ui.html">Workshop UI</a> ? <a href="progression.html">Ownership &amp; unlocks</a> ? <a href="saves.html">Reading &amp; backing up saves</a> ? <a href="multiplayer.html">Multiplayer architecture</a> ? <a href="paths.html">Game paths &amp; classes</a> ? <a href="custom-content.html">Custom content</a> ? <a href="packaging.html">Packaging a Lua mod</a> ? <a href="compatibility.html">Checking game updates</a> ? <a href="coverage.html">Coverage &amp; testing notes</a> ? <a href="tools.html">Tools &amp; resources</a></p></noscript>
+</body>
+</html>

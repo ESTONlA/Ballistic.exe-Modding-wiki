@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hits &amp; scoring | Ballistic Modding Wiki</title>
+  <meta name="description" content="Separate valid hits, rewards, cosmetic reactions and custom round scores.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="scoring" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Hits &amp; scoring</h1><p class="lead">Count one valid gameplay event once, and keep your own score separate from progression.</p>
+<h2 id="target-callbacks">Target callbacks</h2><p>The observed <code>OnHit</code> signature passes <code>ValidHit</code>, player, impact information, hit energy, hit velocity, bonus flag, cartridge-unlock flag and breaking-hit flag. Character targets have their own matching hook path in the inspected build.</p><p>Inspect validity before scoring. Registering both base and derived handlers without attribution or deduplication can count a single physical shot more than once.</p>
+<h2 id="attribute-a-hit">Attribute a hit</h2><ol><li>Give each local firing event a monotonically increasing shot ID.</li><li>Associate created bullet actors with that shot.</li><li>Use the target’s hit path to connect the bullet and target.</li><li>Check valid-hit state before adding a score.</li><li>Retire old shot and bullet references after a short bounded window.</li></ol><p>Do not attribute every hit to “the most recent shot” when the weapon can have several projectiles in flight. Two players firing at once makes that mistake especially visible.</p>
+<h2 id="deduplicate-events">Deduplicate events</h2><p>For a custom per-target hit score, one useful key is <code>round + player + shot + target</code>. Decide explicitly whether pellets or repeated contacts should score independently for your mode. Deduplication policy is game design, not just a networking detail.</p>
+<pre data-title="Pure Lua scoring pattern; reset seen and score each round" data-language="lua"><code>-- Custom mode state, not the game's persistent score.
+local seen = {}
+local score = 0
+
+local function award(roundId, playerId, shotId, targetId, points)
+    local key = table.concat({roundId, playerId, shotId, targetId}, &quot;:&quot;)
+    if seen[key] then return false end
+    if type(points) ~= &quot;number&quot; or points ~= points then return false end
+    if points &lt; 0 or points &gt; 100000 then return false end
+    seen[key] = true
+    score = score + math.floor(points)
+    return true
+end</code></pre>
+<h2 id="cosmetics-and-rewards">Cosmetics are not rewards</h2><p>A replicated impact can play a reaction without replaying the full local scoring/reward event. The local target fixture used <code>CosmeticOnHit</code> for visual response, with custom score handled separately. That does not make the function a complete substitute for the game’s normal hit logic.</p><p>Do not replay the ordinary hit event merely to display a remote impact: it may grant progression, unlock ammunition or change target value again.</p>
+<h2 id="round-timing">Round timing</h2><p>Use explicit countdown, playing, settling and finished phases. For network play, define whether a hit near the deadline is accepted by host receipt time, synchronised event time or a bounded grace policy. Cancel or pause when the connection changes instead of letting an invisible round keep running.</p>
+<h2 id="tested-scope">What was checked</h2><p>Local fixtures exercised valid native hits, one-hit rejection, cosmetic reactions and separate session scores. Internet-delay fairness and simultaneous real-peer shooting are separate tests, not proven by a local fixture. The examples describe the local Windows demo setup. See <a href="compatibility.html">Checking game updates</a> before using them on another build.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> ? <a href="installation.html">Installing UE4SS</a> ? <a href="first-mod.html">Your first mod</a> ? <a href="hooks.html">Working with hooks</a> ? <a href="objects.html">Finding game objects</a> ? <a href="runtime.html">Timers &amp; cleanup</a> ? <a href="data-tables.html">Reading data tables</a> ? <a href="debugging.html">Debugging</a> ? <a href="weapons.html">Weapon assemblies</a> ? <a href="attachments.html">Attachments &amp; rails</a> ? <a href="weapon-stats.html">Weapon stats</a> ? <a href="ballistics.html">Shots &amp; ballistics</a> ? <a href="targets.html">Finding &amp; tracking targets</a> ? <a href="scoring.html">Hits &amp; scoring</a> ? <a href="ranges.html">Range menus &amp; travel</a> ? <a href="workshop-ui.html">Workshop UI</a> ? <a href="progression.html">Ownership &amp; unlocks</a> ? <a href="saves.html">Reading &amp; backing up saves</a> ? <a href="multiplayer.html">Multiplayer architecture</a> ? <a href="paths.html">Game paths &amp; classes</a> ? <a href="custom-content.html">Custom content</a> ? <a href="packaging.html">Packaging a Lua mod</a> ? <a href="compatibility.html">Checking game updates</a> ? <a href="coverage.html">Coverage &amp; testing notes</a> ? <a href="tools.html">Tools &amp; resources</a></p></noscript>
+</body>
+</html>

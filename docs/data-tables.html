@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reading data tables | Ballistic Modding Wiki</title>
+  <meta name="description" content="Inspect the game’s table rows without rewriting live content.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="data-tables" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Reading data tables</h1><p class="lead">Find the table, inspect a row, and keep discovery separate from mutation.</p>
+<h2 id="find-a-table">Find a table</h2><p>The demo has tables for attachment mount definitions and range menu data. You can inspect them once the asset is loaded:</p>
+<pre data-title="List range row names" data-language="lua"><code>ExecuteInGameThread(function()
+    local data = LoadAsset(&quot;/Game/Data/Ranges/RangeData.RangeData&quot;)
+    if not data or not data:IsValid() then return end
+
+    local names = data:GetRowNames()
+    for i = 1, #names do
+        print(&quot;[MyMod] Range row: &quot; .. tostring(names[i]) .. &quot;\n&quot;)
+    end
+end</code></pre>
+<h2 id="read-a-row">Read a row</h2><p>In the tested loader, <code>FindRow</code> accepted a Lua string as the row name. Passing an <code>FName</code> in that particular call returned no row. This is different from APIs that explicitly expect an <code>FName</code>.</p>
+<pre data-title="Inside the callback above, after data is valid" data-language="lua"><code>local row = data:FindRow(&quot;PistolRange&quot;)
+if row then
+    local map = row.MapName_3_02B8F3864CDF2B67468FDD80A1766519
+    print(&quot;[MyMod] Map: &quot; .. map:ToString() .. &quot;\n&quot;)
+end</code></pre>
+<p>The long suffix belongs to a Blueprint struct field. Copy the field name from your build’s dump instead of shortening it to <code>MapName</code> and assuming that will work.</p>
+<h2 id="useful-tables">Useful tables</h2>
+<div class="table-scroll"><table><thead><tr><th>Asset</th><th>What it describes</th></tr></thead><tbody><tr><td><code>/Game/Data/Ranges/RangeData.RangeData</code></td><td>Range rows, display information and destination names.</td></tr><tr><td><code>/Game/Data/Weapons/Attachment_Data.Attachment_Data</code></td><td>Attachment mount relationships.</td></tr></tbody></table></div>
+<p>The attachment table contained 86 mount rows in the inspected build. That is a build observation, not a constant your mod should require forever.</p>
+<h2 id="soft-references">Watch the field types</h2><p>A row can contain names, text, class references and soft class references. A soft reference is not the same thing as a loaded class. Converting, loading or iterating them can trigger additional engine work.</p><p>Keep an initial probe small: list names, read one known row, then inspect one field. Don’t start by copying the entire table into Lua.</p>
+<h2 id="changing-data">Before changing data</h2><p>Changing a row affects every consumer that reads the live table. Rewriting recursive mount relationships can also introduce cycles. A previous broad attachment-row copying experiment froze the game; a targeted lookup hook was used instead.</p><p>Make any edits reversible, preserve original values and test teardown. Adding a menu row doesn’t create its map or asset. See <a href="ranges.html">Range menus &amp; travel</a>.</p>
+<h2 id="tested-scope">What was checked</h2><p>Row-name listing and string FindRow calls were exercised locally. Broad soft-reference copying is a known failed experiment, not a recommended technique. The examples describe the local Windows demo setup. See <a href="compatibility.html">Checking game updates</a> before using them on another build.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> ? <a href="installation.html">Installing UE4SS</a> ? <a href="first-mod.html">Your first mod</a> ? <a href="hooks.html">Working with hooks</a> ? <a href="objects.html">Finding game objects</a> ? <a href="runtime.html">Timers &amp; cleanup</a> ? <a href="data-tables.html">Reading data tables</a> ? <a href="debugging.html">Debugging</a> ? <a href="weapons.html">Weapon assemblies</a> ? <a href="attachments.html">Attachments &amp; rails</a> ? <a href="weapon-stats.html">Weapon stats</a> ? <a href="ballistics.html">Shots &amp; ballistics</a> ? <a href="targets.html">Finding &amp; tracking targets</a> ? <a href="scoring.html">Hits &amp; scoring</a> ? <a href="ranges.html">Range menus &amp; travel</a> ? <a href="workshop-ui.html">Workshop UI</a> ? <a href="progression.html">Ownership &amp; unlocks</a> ? <a href="saves.html">Reading &amp; backing up saves</a> ? <a href="multiplayer.html">Multiplayer architecture</a> ? <a href="paths.html">Game paths &amp; classes</a> ? <a href="custom-content.html">Custom content</a> ? <a href="packaging.html">Packaging a Lua mod</a> ? <a href="compatibility.html">Checking game updates</a> ? <a href="coverage.html">Coverage &amp; testing notes</a> ? <a href="tools.html">Tools &amp; resources</a></p></noscript>
+</body>
+</html>

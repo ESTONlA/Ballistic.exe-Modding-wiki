@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Checking game updates | Ballistic Modding Wiki</title>
+  <meta name="description" content="Recheck signatures, assets and behaviour after a game or loader update.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="compatibility" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Checking game updates</h1><p class="lead">Treat an update as a fresh compatibility check, not an automatic reason to change code.</p>
+<h2 id="record-the-build">Record the build</h2><p>Write down the Steam build ID, executable version, UE4SS version/commit and your mod version. Keep a copy of the previous release so you can distinguish a new game change from a changed script.</p><p>The local demo records used build <code>26083142</code> and a <code>UE5.7</code> release-branch executable. These are recorded reference points, not a claim that the reader’s installed game is that build.</p>
+<h2 id="check-the-surface">Check the integration surface</h2>
+<div class="table-scroll"><table><thead><tr><th>Area</th><th>Check</th></tr></thead><tbody><tr><td>Hooks</td><td>Function exists, class is loaded, signature and callback parameters still match.</td></tr><tr><td>Properties</td><td>Field type and generated name still match; don’t reuse an old offset.</td></tr><tr><td>Assets</td><td>Expected class, mesh, material and sound actually load.</td></tr><tr><td>UI</td><td>Construction, input, layout, close/reopen and duplicate prevention.</td></tr><tr><td>Gameplay</td><td>Equip, fire, hit, switch weapon, restart and travel.</td></tr><tr><td>Saves</td><td>Read-only checks first; controlled write/restore tests on a disposable profile.</td></tr></tbody></table></div>
+<h2 id="test-in-stages">Test in stages</h2><ol><li>Launch the loader without your feature enabled.</li><li>Enable the mod and confirm clean startup.</li><li>Trigger one relevant callback and inspect its arguments.</li><li>Use the actual menu or gameplay feature.</li><li>Repeat operations that rebuild objects or travel worlds.</li><li>Run separate multi-PC tests for a multiplayer feature.</li></ol><p>Stop changing code once a check passes unless there is a new failure or unresolved concern. A large refactor during a compatibility audit makes the result harder to interpret.</p>
+<h2 id="record-what-passed">Record what passed</h2><p>Keep test descriptions specific: “registered eight hooks” is different from “both peers fired and hit the same target”. Record the test method and its limits along with the result.</p><p>The recorded October demo update passed local menu, travel, model and synthetic gameplay checks. The real two-PC scenarios still had a narrower verified scope. Those two facts can coexist.</p>
+<h2 id="report-a-regression">Report a regression</h2><p>Include reproduction steps, exact content names, version details, a fresh relevant log excerpt and what changed from the last working build. Remove personal paths and IDs before posting logs publicly.</p><p>If you cannot reproduce a reported issue, preserve the report and the tested limits. Don’t mark it fixed because an unrelated synthetic case passed.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> ? <a href="installation.html">Installing UE4SS</a> ? <a href="first-mod.html">Your first mod</a> ? <a href="hooks.html">Working with hooks</a> ? <a href="objects.html">Finding game objects</a> ? <a href="runtime.html">Timers &amp; cleanup</a> ? <a href="data-tables.html">Reading data tables</a> ? <a href="debugging.html">Debugging</a> ? <a href="weapons.html">Weapon assemblies</a> ? <a href="attachments.html">Attachments &amp; rails</a> ? <a href="weapon-stats.html">Weapon stats</a> ? <a href="ballistics.html">Shots &amp; ballistics</a> ? <a href="targets.html">Finding &amp; tracking targets</a> ? <a href="scoring.html">Hits &amp; scoring</a> ? <a href="ranges.html">Range menus &amp; travel</a> ? <a href="workshop-ui.html">Workshop UI</a> ? <a href="progression.html">Ownership &amp; unlocks</a> ? <a href="saves.html">Reading &amp; backing up saves</a> ? <a href="multiplayer.html">Multiplayer architecture</a> ? <a href="paths.html">Game paths &amp; classes</a> ? <a href="custom-content.html">Custom content</a> ? <a href="packaging.html">Packaging a Lua mod</a> ? <a href="compatibility.html">Checking game updates</a> ? <a href="coverage.html">Coverage &amp; testing notes</a> ? <a href="tools.html">Tools &amp; resources</a></p></noscript>
+</body>
+</html>

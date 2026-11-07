@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Workshop UI | Ballistic Modding Wiki</title>
+  <meta name="description" content="Create native widget instances and follow workbench edit-mode lifetime.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="workshop-ui" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Workshop UI</h1><p class="lead">Reuse the game’s widgets, but create your own controls and callbacks.</p>
+<h2 id="find-the-workshop">Find the workshop</h2><p>The observed HUD class is <code>/Game/UI/HUD/Workshop/HUD_Workshop.HUD_Workshop_C</code>. Its attachment editor is <code>WeaponEditMOde</code>, with that exact spelling.</p><p>The HUD and attachment editor are related but have different lifetimes. A button placed on the HUD canvas needs its visibility tied to entering and leaving attachment edit mode.</p>
+<h2 id="create-a-native-button">Create a native button</h2><p>The common <code>TheRangeButton_C</code> class provides the game’s existing button appearance. This creates a separate widget; it does not click or duplicate Save and exit:</p>
+<pre data-title="Widget construction only; it is not yet displayed or bound" data-language="lua"><code>local H = require(&quot;UEHelpers&quot;)
+
+ExecuteInGameThread(function()
+    local pc = H.GetPlayerController()
+    if not pc or not pc:IsValid() then return end
+    local class = LoadAsset(&quot;/Game/UI/Common/TheRangeButton.TheRangeButton_C&quot;)
+    if not class or not class:IsValid() then return end
+    local library = StaticFindObject(&quot;/Script/UMG.Default__WidgetBlueprintLibrary&quot;)
+    local button = library:Create(pc, class, pc)
+    if not button or not button:IsValid() then return end
+    button.Text = FText(&quot;My action&quot;)
+    button.NavText:SetText(FText(&quot;My action&quot;))
+    -- Add button to your valid parent panel and retain a reference.
+end</code></pre>
+<h2 id="place-the-control">Place the control</h2><p>For a CanvasPanel parent, add with <code>AddChildToCanvas</code> and set the resulting CanvasPanelSlot’s anchors, alignment, position and size. Position numbers are relative to the anchors, not always screen pixels from the top left.</p><p>A local workbench check found Save and exit at <code>X=50, Y=-50</code>, size <code>200×40</code>, with bottom-left anchors and bottom alignment. A button directly above it used <code>Y=-100</code>, leaving a ten-unit gap. Those numbers describe that HUD layout, not every resolution or future build.</p>
+<h2 id="do-not-copy-delegates">Don’t copy action delegates</h2><p>Copy appearance properties deliberately, not the original widget’s action bindings. A copied Save and exit delegate can execute the original action when your new button is pressed.</p><p>One local implementation handled the left-mouse keybind and checked the native button’s hover state. That verified a mouse path only; it does not establish controller, keyboard, touch or accessibility support. Prefer a verified button event route when your loader and widget expose one.</p>
+<h2 id="rebuilds-and-input">Rebuilds and input</h2><p>Prevent duplicate construction by checking that your widget still has a valid parent. Hide it outside edit mode, cancel pending actions when the displayed weapon changes, and restore any input mode or cursor state you changed.</p><p>Test hover, click, closing the menu and opening it again. A widget object existing in memory does not prove that it is visible or clickable.</p>
+<h2 id="tested-scope">What was checked</h2><p>Native button construction, matching canvas layout, duplicate prevention and edit-mode visibility passed local fixtures. Full interaction on every fitted player weapon and input device was not established. The examples describe the local Windows demo setup. See <a href="compatibility.html">Checking game updates</a> before using them on another build.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> ? <a href="installation.html">Installing UE4SS</a> ? <a href="first-mod.html">Your first mod</a> ? <a href="hooks.html">Working with hooks</a> ? <a href="objects.html">Finding game objects</a> ? <a href="runtime.html">Timers &amp; cleanup</a> ? <a href="data-tables.html">Reading data tables</a> ? <a href="debugging.html">Debugging</a> ? <a href="weapons.html">Weapon assemblies</a> ? <a href="attachments.html">Attachments &amp; rails</a> ? <a href="weapon-stats.html">Weapon stats</a> ? <a href="ballistics.html">Shots &amp; ballistics</a> ? <a href="targets.html">Finding &amp; tracking targets</a> ? <a href="scoring.html">Hits &amp; scoring</a> ? <a href="ranges.html">Range menus &amp; travel</a> ? <a href="workshop-ui.html">Workshop UI</a> ? <a href="progression.html">Ownership &amp; unlocks</a> ? <a href="saves.html">Reading &amp; backing up saves</a> ? <a href="multiplayer.html">Multiplayer architecture</a> ? <a href="paths.html">Game paths &amp; classes</a> ? <a href="custom-content.html">Custom content</a> ? <a href="packaging.html">Packaging a Lua mod</a> ? <a href="compatibility.html">Checking game updates</a> ? <a href="coverage.html">Coverage &amp; testing notes</a> ? <a href="tools.html">Tools &amp; resources</a></p></noscript>
+</body>
+</html>

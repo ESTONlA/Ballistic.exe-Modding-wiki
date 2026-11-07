@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Timers &amp; cleanup | Ballistic Modding Wiki</title>
+  <meta name="description" content="Keep delayed work tied to the right world and avoid overlapping callbacks.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="runtime" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Timers &amp; cleanup</h1><p class="lead">Make a small mod behave properly after menu changes, travel and repeated clicks.</p>
+<h2 id="pick-a-timing-source">Pick a timing source</h2><p>Use a slow discovery loop to wait for assets, a game-thread callback for engine work, and a game clock for elapsed-time calculations. They solve different problems.</p>
+<div class="table-scroll"><table><thead><tr><th>Task</th><th>Approach</th></tr></thead><tbody><tr><td>Wait for a widget class</td><td>A bounded or low-frequency discovery loop.</td></tr><tr><td>Read or change Unreal objects</td><td>Run the operation on the game thread.</td></tr><tr><td>Animate an overlay</td><td>Use elapsed time; don’t tie speed to callback count.</td></tr><tr><td>Expire a notification</td><td>Compare timestamps rather than assuming an exact timer interval.</td></tr></tbody></table></div>
+<h2 id="avoid-overlapping-work">Avoid overlapping work</h2><p>A background loop can queue a new callback before the previous one has run. Keep one pending callback and clear the flag even after a Lua error:</p>
+<pre data-title="One pending game-thread callback" data-language="lua"><code>local queued = false
+
+LoopAsync(1000, function()
+    if queued then return end
+    queued = true
+
+    ExecuteInGameThread(function()
+        local ok, err = pcall(function()
+            -- Read or update the current world's objects here.
+        end)
+        queued = false
+        if not ok then print(&quot;[MyMod] &quot; .. tostring(err) .. &quot;\n&quot;) end
+    end)
+end</code></pre>
+<h2 id="cancel-stale-actions">Cancel stale actions</h2><p>For a queued attachment operation, capture the weapon identity and an operation number when the user clicks. Before every delayed step, check that the same editor is open, the weapon is unchanged and the operation number still matches. Stop when any check fails.</p><p>Setting a Lua boolean doesn’t cancel a callback already in the queue. The callback needs to check that boolean before doing engine work.</p>
+<h2 id="world-owned-state">Separate world state from settings</h2><p>Keep preferences such as overlay size separate from actor references. On world change, clear actor/widget caches, pending shot IDs and world-specific timers. Rebuild them from the new world. An object name alone can be reused after travel; a world identity plus object identity is a better cache key.</p>
+<h2 id="clean-up-what-you-create">Clean up what you create</h2><p>Track only the actors and widgets your mod creates. Remove its widgets from their parents and destroy its actors while they are still valid in that world. Don’t run a global actor sweep and delete everything with a similar class name.</p><p>If you temporarily change an existing actor’s visibility, collision or physics, remember its original values and restore those values when your feature closes.</p>
+<h2 id="tested-scope">What was checked</h2><p>Queued-work guards and per-world cleanup are used in the local UI, target and attachment fixtures. This guide is a lifecycle pattern, not a universal timer-cancellation API. The examples describe the local Windows demo setup. See <a href="compatibility.html">Checking game updates</a> before using them on another build.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> ? <a href="installation.html">Installing UE4SS</a> ? <a href="first-mod.html">Your first mod</a> ? <a href="hooks.html">Working with hooks</a> ? <a href="objects.html">Finding game objects</a> ? <a href="runtime.html">Timers &amp; cleanup</a> ? <a href="data-tables.html">Reading data tables</a> ? <a href="debugging.html">Debugging</a> ? <a href="weapons.html">Weapon assemblies</a> ? <a href="attachments.html">Attachments &amp; rails</a> ? <a href="weapon-stats.html">Weapon stats</a> ? <a href="ballistics.html">Shots &amp; ballistics</a> ? <a href="targets.html">Finding &amp; tracking targets</a> ? <a href="scoring.html">Hits &amp; scoring</a> ? <a href="ranges.html">Range menus &amp; travel</a> ? <a href="workshop-ui.html">Workshop UI</a> ? <a href="progression.html">Ownership &amp; unlocks</a> ? <a href="saves.html">Reading &amp; backing up saves</a> ? <a href="multiplayer.html">Multiplayer architecture</a> ? <a href="paths.html">Game paths &amp; classes</a> ? <a href="custom-content.html">Custom content</a> ? <a href="packaging.html">Packaging a Lua mod</a> ? <a href="compatibility.html">Checking game updates</a> ? <a href="coverage.html">Coverage &amp; testing notes</a> ? <a href="tools.html">Tools &amp; resources</a></p></noscript>
+</body>
+</html>

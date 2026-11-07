@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Range menus &amp; travel | Ballistic Modding Wiki</title>
+  <meta name="description" content="Trace range rows, unlock checks, map packages and shared travel.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="ranges" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Range menus &amp; travel</h1><p class="lead">A range card is UI data. A playable destination also needs a cooked map and a working travel path.</p>
+<h2 id="range-menu-data">Range menu data</h2><p>The range table is <code>/Game/Data/Ranges/RangeData.RangeData</code>. The <code>PistolRange</code> row mapped to <code>Range_SwimmingPool</code> in local checks. Its display label is Azure Swimming Pool.</p><p>The inspected table also had rows such as <code>Valley</code> and <code>ShoppingMall</code>. Their presence did not prove those maps were usable in the demo.</p>
+<h2 id="make-a-card-appear">What makes a card appear?</h2><p>Two observed UI entry points are <code>RangeList.PreConstruct</code> and <code>RangeListItem.SetSelected</code>. The menu also checks the game instance’s <code>UnlockedRanges</code>, so adding a row alone may leave the card absent.</p><p>A runtime-only custom card was made visible locally by adding its row name to the in-memory unlocked list. That was an experimental menu change, not a demonstrated permanent unlock or newly cooked map.</p>
+<h2 id="confirm-a-destination">Confirm the destination</h2>
+<div class="table-scroll"><table><thead><tr><th>Level</th><th>Package / result</th></tr></thead><tbody><tr><td><code>Bunker_Main</code></td><td><code>/Game/Maps/Bunker/Bunker_Main</code></td></tr><tr><td><code>Range_SwimmingPool</code></td><td><code>/Game/Maps/Ranges/Range_SwimmingPool</code></td></tr><tr><td><code>Range_Valley</code></td><td>A custom-card travel attempt returned to the main menu; not a working demo destination.</td></tr></tbody></table></div>
+<p>Use a small explicit allowlist of destinations you tested. Don’t assemble arbitrary map paths from a user-entered label or assume every table row exists in the archive.</p>
+<h2 id="local-and-shared-travel">Local and shared travel</h2><p>Opening a map for one local player is different from moving a connected listen-server session. The local multiplayer code used the AdvancedSessions <code>ServerTravel</code> path with <code>bUseSeamlessTravel</code> enabled and a <code>?listen</code> destination.</p><p>That solution depends on the session and driver already being valid. Appending <code>?listen</code> to an arbitrary OpenLevel call is not a complete multiplayer implementation.</p>
+<h2 id="arrival-checks">After arrival</h2><ol><li>Confirm the actual current level name and world identity.</li><li>Reacquire controllers, pawns, weapons, targets and UI.</li><li>Confirm the local player has a usable weapon and ammunition.</li><li>For multiplayer, confirm both peers arrived before starting a round.</li><li>Try restart, return to bunker and repeat travel.</li></ol><p>Building a detached scene by teleporting within the pool world still uses that world’s lighting and lifecycle. See <a href="custom-content.html">Custom content</a>.</p>
+<h2 id="tested-scope">What was checked</h2><p>Pool travel, restart and return were exercised in local native/listen fixtures. Two-PC travel reliability and absent demo maps are not implied by those checks. The examples describe the local Windows demo setup. See <a href="compatibility.html">Checking game updates</a> before using them on another build.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> ? <a href="installation.html">Installing UE4SS</a> ? <a href="first-mod.html">Your first mod</a> ? <a href="hooks.html">Working with hooks</a> ? <a href="objects.html">Finding game objects</a> ? <a href="runtime.html">Timers &amp; cleanup</a> ? <a href="data-tables.html">Reading data tables</a> ? <a href="debugging.html">Debugging</a> ? <a href="weapons.html">Weapon assemblies</a> ? <a href="attachments.html">Attachments &amp; rails</a> ? <a href="weapon-stats.html">Weapon stats</a> ? <a href="ballistics.html">Shots &amp; ballistics</a> ? <a href="targets.html">Finding &amp; tracking targets</a> ? <a href="scoring.html">Hits &amp; scoring</a> ? <a href="ranges.html">Range menus &amp; travel</a> ? <a href="workshop-ui.html">Workshop UI</a> ? <a href="progression.html">Ownership &amp; unlocks</a> ? <a href="saves.html">Reading &amp; backing up saves</a> ? <a href="multiplayer.html">Multiplayer architecture</a> ? <a href="paths.html">Game paths &amp; classes</a> ? <a href="custom-content.html">Custom content</a> ? <a href="packaging.html">Packaging a Lua mod</a> ? <a href="compatibility.html">Checking game updates</a> ? <a href="coverage.html">Coverage &amp; testing notes</a> ? <a href="tools.html">Tools &amp; resources</a></p></noscript>
+</body>
+</html>

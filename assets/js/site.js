@@ -1,16 +1,6 @@
 (() => {
   'use strict';
-  const pages = [
-    ['introduction', 'Introduction', 'Getting started'],
-    ['installation', 'Installing UE4SS', 'Getting started'],
-    ['first-mod', 'Your first mod', 'Getting started'],
-    ['hooks', 'Working with hooks', 'Lua scripting'],
-    ['objects', 'Finding game objects', 'Lua scripting'],
-    ['debugging', 'Debugging', 'Lua scripting'],
-    ['paths', 'Game paths & classes', 'Reference'],
-    ['custom-content', 'Custom content', 'Reference'],
-    ['tools', 'Tools & resources', 'Reference']
-  ];
+  const pages = window.WIKI_PAGES;
   const icon = (name) => `<svg viewBox="0 0 24 24" aria-hidden="true">${{
     book:'<path d="M12 5c-3-2-6-2-9-1v15c3-1 6-1 9 1 3-2 6-2 9-1V4c-3-1-6-1-9 1Zm0 0v15"/>',
     search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/>',
@@ -27,7 +17,7 @@
   const esc = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const id = document.body.dataset.page;
   const page = pages.find(p => p[0] === id) || pages[0];
-  const nav = () => [...new Set(pages.map(p => p[2]))].map(group => `<details class="nav-group" open><summary>${group}${icon('down')}</summary>${pages.filter(p => p[2] === group).map(p => `<a href="${p[0]}.html"${p[0] === id ? ' aria-current="page"' : ''}>${p[1]}</a>`).join('')}</details>`).join('');
+  const nav = () => [...new Set(pages.map(p => p[2]))].map(group => `<details class="nav-group"${group === page[2] || group === 'Getting started' ? ' open' : ''}><summary>${group}${icon('down')}</summary>${pages.filter(p => p[2] === group).map(p => `<a href="${p[0]}.html"${p[0] === id ? ' aria-current="page"' : ''}>${p[1]}</a>`).join('')}</details>`).join('');
   const footer = '<div class="sidebar-footer">Ballistic.exe modding documentation<br><a href="tools.html">Tools &amp; external documentation</a></div>';
   document.getElementById('site-header').innerHTML = `<header class="site-header"><button class="icon-button menu-toggle" aria-label="Open navigation">${icon('menu')}</button><a class="brand" href="introduction.html"><span class="brand-mark">${icon('book')}</span>Ballistic Modding Wiki</a><nav class="top-nav" aria-label="Main"><a class="active" href="introduction.html">Documentation</a><a href="tools.html">Resources</a></nav><div class="header-tools"><button class="search-trigger" aria-label="Search documentation">${icon('search')}<span>Search documentation</span><kbd>Ctrl K</kbd></button><button class="icon-button theme-toggle" aria-label="Switch color theme"></button><a class="external-header" href="https://store.steampowered.com/app/3432980/Ballisticexe/" target="_blank" rel="noreferrer">Steam ${icon('external')}</a></div></header>`;
   document.getElementById('sidebar').innerHTML = `<aside class="sidebar" aria-label="Documentation navigation"><p class="sidebar-label">Documentation</p><input class="sidebar-filter" type="search" aria-label="Filter navigation" placeholder="Filter pages…">${nav()}<p class="nav-empty" hidden>No matching pages.</p>${footer}</aside>`;

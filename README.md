@@ -1,16 +1,11 @@
 # Ballistic Modding Wiki
 
-[![Game coverage: approximately 10%](https://img.shields.io/badge/Game_coverage-~10%25-5b8def?style=for-the-badge&labelColor=20232a)](#coverage)
+[![Game coverage: approximately 10%](https://img.shields.io/badge/Game_coverage-~10%25-5b8def?style=for-the-badge&labelColor=20232a)](docs/coverage.html)
+[![25 guides](https://img.shields.io/badge/Guides-25-5b8def?style=for-the-badge&labelColor=20232a)](docs/introduction.html#guide-index)
 
 Setup notes, Lua guides and game references for modding Ballistic.exe.
 
-## Coverage
-
-**About 10% of the game's modding systems documented so far.** This is a rough estimate based on the demo, not a measured count of every class or asset.
-
-Covered: UE4SS setup, a first Lua mod, hooks, object lookup, debugging, and a few workshop functions and game paths.
-
-Still to document: weapon and attachment systems in depth, ammunition and ballistics, targets and scoring, progression and saves, and detailed UI and range behaviour.
+There are 25 guides now, including weapons, attachments, stats, shot/hit events, targets, scoring, workshop UI, ranges, saves and multiplayer architecture. The [coverage page](docs/coverage.html) lists what’s covered and what still needs research. The percentage is still a rough estimate, not an audited count of the whole game.
 
 ## Run locally
 
@@ -28,6 +23,7 @@ You can also open `docs/introduction.html` straight in your browser. Some browse
 docs/                   Individual HTML guides
 assets/css/site.css     Styles and both color themes
 assets/js/site.js       Navigation, search and page controls
+assets/js/navigation.js Page titles, order and sidebar groups
 assets/js/theme.js      Applies the saved theme before rendering
 assets/js/search-index.js
                         Generated search data
@@ -38,7 +34,7 @@ tools/serve.mjs         Local preview server
 
 Edit the text inside `<article>` in any `docs/*.html` file. Give section headings an `id`; the table of contents picks them up automatically.
 
-The sidebar’s page list is at the top of `assets/js/site.js`. CSS stays in `assets/css/site.css`.
+The sidebar’s page list is in `assets/js/navigation.js`. Add a guide there and create its HTML file; the build checks that they match. CSS stays in `assets/css/site.css`.
 
 Dark mode is on by default. The theme toggle remembers your choice.
 

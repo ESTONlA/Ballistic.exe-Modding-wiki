@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Multiplayer architecture | Ballistic Modding Wiki</title>
+  <meta name="description" content="Understand what Steam transport does and which game state needs custom synchronization.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="multiplayer" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Multiplayer architecture</h1><p class="lead">Connecting two players is the beginning. Shared game state still needs explicit rules.</p>
+<h2 id="connection-is-not-replication">Connection isn’t replication</h2><p>A Steam session or invitation identifies and connects peers. It does not automatically make every single-player actor, UI action, weapon part or score replicate.</p><p>The local multiplayer implementation combines a listen-server travel path with a native Steam bridge and custom state messages. That architecture is a mod implementation, not an official multiplayer API supplied by this wiki.</p>
+<h2 id="state-and-events">Separate state from events</h2>
+<div class="table-scroll"><table><thead><tr><th>Send as state</th><th>Send as events</th></tr></thead><tbody><tr><td>Player pose, aim and equipped appearance</td><td>A shot, a hit or a chat message.</td></tr><tr><td>Target pose and current hit state</td><td>A round-start or recovery request.</td></tr><tr><td>Current round phase and scores</td><td>A one-time save offer or acceptance.</td></tr></tbody></table></div>
+<p>Snapshots can supersede older snapshots. One-time events need IDs, acknowledgement and duplicate handling. Replaying the same acknowledged hit must not award its points again.</p>
+<h2 id="authority-and-validation">Authority and validation</h2><p>Choose who decides travel, target state and scoring. A host-authoritative mode should validate the sender, session, round, target identity and bounded event values before applying a guest request.</p><p>Never accept arbitrary asset paths, file paths or Lua source from a network message. Use explicit allowlists and fixed save slots where appropriate.</p>
+<h2 id="movement-and-visible-guns">Movement and visible guns</h2><p>Render remote movement from buffered snapshots rather than snapping directly to each packet. Reset the buffer for teleport or world changes. Interpolation hides normal packet gaps; it does not fix wrong authority or missing state.</p><p>Remote weapon appearance can be reconstructed from mesh references and relative transforms. Reuse unchanged meshes and clean up replaced ones. A cosmetic proxy is not another fully simulated gun actor.</p>
+<h2 id="interruptions-and-testing">Interruptions and testing</h2><p>Give every session and world generation a distinct identity. Discard stale packets after reconnect or travel. Cancel active rounds when a player disconnects, and recover through an explicit ready/start flow.</p><p>Test on two PCs/accounts: simultaneous shots, the same target hit by both peers, gun switching, range restart, repeated travel and a disconnect near round end. A local simulated-peer test cannot establish real network behaviour under delay.</p>
+<h2 id="tested-scope">What was checked</h2><p>Local transport fixtures, actor rendering and native gameplay checks exist; the user previously confirmed basic two-PC connection. Later simultaneous shooting, save application and delay-fairness scenarios were not verified in that recorded pass. The examples describe the local Windows demo setup. See <a href="compatibility.html">Checking game updates</a> before using them on another build.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> ? <a href="installation.html">Installing UE4SS</a> ? <a href="first-mod.html">Your first mod</a> ? <a href="hooks.html">Working with hooks</a> ? <a href="objects.html">Finding game objects</a> ? <a href="runtime.html">Timers &amp; cleanup</a> ? <a href="data-tables.html">Reading data tables</a> ? <a href="debugging.html">Debugging</a> ? <a href="weapons.html">Weapon assemblies</a> ? <a href="attachments.html">Attachments &amp; rails</a> ? <a href="weapon-stats.html">Weapon stats</a> ? <a href="ballistics.html">Shots &amp; ballistics</a> ? <a href="targets.html">Finding &amp; tracking targets</a> ? <a href="scoring.html">Hits &amp; scoring</a> ? <a href="ranges.html">Range menus &amp; travel</a> ? <a href="workshop-ui.html">Workshop UI</a> ? <a href="progression.html">Ownership &amp; unlocks</a> ? <a href="saves.html">Reading &amp; backing up saves</a> ? <a href="multiplayer.html">Multiplayer architecture</a> ? <a href="paths.html">Game paths &amp; classes</a> ? <a href="custom-content.html">Custom content</a> ? <a href="packaging.html">Packaging a Lua mod</a> ? <a href="compatibility.html">Checking game updates</a> ? <a href="coverage.html">Coverage &amp; testing notes</a> ? <a href="tools.html">Tools &amp; resources</a></p></noscript>
+</body>
+</html>

@@ -1,7 +1,18 @@
 import {readFile,writeFile,readdir,mkdir,cp,stat} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {runInNewContext} from 'node:vm';
 const root=path.resolve(fileURLToPath(new URL('../',import.meta.url)));
+const context={window:{}};
+runInNewContext(await readFile(path.join(root,'assets/js/navigation.js'),'utf8'),context);
+const navigation=context.window.WIKI_PAGES;
+if(!Array.isArray(navigation)||!navigation.length)throw Error('Missing page navigation');
+const listed=new Set();
+for(const row of navigation){
+ if(!Array.isArray(row)||row.length!==3||row.some(s=>typeof s!=='string'||!s.trim())||!/^[-a-z0-9]+$/.test(row[0]))throw Error('Invalid navigation entry');
+ if(listed.has(row[0]))throw Error(`Duplicate navigation entry: ${row[0]}`);
+ listed.add(row[0]);
+}
 const pages=await readdir(path.join(root,'docs'));
 const entries=[];
 const decode=s=>s.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&');
@@ -11,6 +22,8 @@ for(const name of pages.filter(f=>f.endsWith('.html'))){
  const title=decode(html.match(/<h1>([\s\S]*?)<\/h1>/)?.[1]||'');
  const body=html.match(/<article>([\s\S]*?)<\/article>/)?.[1];
  if(!id||!title||!body)throw Error(`Missing metadata/article: ${name}`);
+ if(id!==name.slice(0,-5)||!listed.has(id))throw Error(`Unlisted or mismatched page: ${name}`);
+ if(!html.includes('../assets/js/navigation.js'))throw Error(`Missing shared navigation: ${name}`);
  if((html.match(/<h1>/g)||[]).length!==1)throw Error(`Expected one title: ${name}`);
  const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
  if(new Set(ids).size!==ids.length)throw Error(`Duplicate anchor: ${name}`);
@@ -25,7 +38,8 @@ for(const name of pages.filter(f=>f.endsWith('.html'))){
  const text=decode(body.replace(/<[^>]+>/g,' ')).replace(/\s+/g,' ').trim();
  entries.push({id,title,text});
 }
-if(entries.length!==9)throw Error(`Expected nine documentation pages, got ${entries.length}`);
+if(entries.length!==navigation.length)throw Error('Every navigation entry needs a matching HTML guide');
+entries.sort((a,b)=>navigation.findIndex(p=>p[0]===a.id)-navigation.findIndex(p=>p[0]===b.id));
 await writeFile(path.join(root,'assets/js/search-index.js'),`// Generated from docs/*.html by tools/build.mjs.\nwindow.WIKI_SEARCH = ${JSON.stringify(entries).replaceAll('<','\\u003c')};\n`);
 const dist=path.join(root,'dist');await mkdir(dist,{recursive:true});
 for(const item of ['index.html','.nojekyll','docs','assets'])await cp(path.join(root,item),path.join(dist,item),{recursive:true});

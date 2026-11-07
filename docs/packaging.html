@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Packaging a Lua mod | Ballistic Modding Wiki</title>
+  <meta name="description" content="Ship only the mod’s files with clear install paths and reproducible versions.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="packaging" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Packaging a Lua mod</h1><p class="lead">Make the archive easy to install and leave your development setup out of it.</p>
+<h2 id="pick-an-archive-root">Pick an archive root</h2><p>For an archive intended to be extracted into <code>ue4ss/Mods</code>, include the mod folder itself:</p>
+<pre data-title="Example mod-root archive" data-language="text"><code>MyMod/
+├── enabled.txt
+└── Scripts/
+    ├── main.lua
+    ├── config.lua
+    └── feature.lua
+README.md</code></pre>
+<p>Another valid approach is to include the full <code>Ballistic/Binaries/Win64/ue4ss/Mods/MyMod</code> path and instruct the user to extract into the game folder. Choose one root and describe it exactly. Mixing the instructions produces doubled or missing folders.</p>
+<h2 id="include-only-release-files">Include only release files</h2><p>Use an explicit file list in the build script instead of zipping the whole project. Include the Lua files the mod loads, its enable marker, required mod-owned binaries and the player instructions.</p><p>Exclude saves, backup saves, captured screenshots, object dumps, runtime reports, logs, tests, browser profiles and unrelated mods. Don’t package the game or the entire loader with a small Lua mod.</p>
+<h2 id="version-the-whole-mod">Version the whole mod</h2><p>Put a version in the startup log and give the archive the same version. A native bridge and its Lua scripts can depend on each other, so ship a complete matching release rather than telling users to update just one file.</p><p>If a protocol changes, check the peer’s protocol version before accepting gameplay messages. An application version label alone does not prove wire compatibility.</p>
+<h2 id="write-install-instructions">Write installation instructions</h2><ul><li>Name the loader requirement and tested game build.</li><li>Show the exact extraction destination and final folder layout.</li><li>List controls and configuration file locations.</li><li>Explain the full-restart requirement used by your build.</li><li>Explain how to disable the mod and what persisted changes remain.</li></ul><p>Removing a compatibility script does not necessarily undo an assembly already saved by the game.</p>
+<h2 id="check-the-archive">Check the archive</h2><p>Inspect the file list and compare packaged files with the ones you tested. Try extracting into an empty staging folder and reading the instructions as a new user. For an updated release, confirm that renamed or removed modules cannot remain active from the old install.</p><p>A checksum can identify the exact artifact you tested; it is not a substitute for testing the artifact’s behaviour.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> ? <a href="installation.html">Installing UE4SS</a> ? <a href="first-mod.html">Your first mod</a> ? <a href="hooks.html">Working with hooks</a> ? <a href="objects.html">Finding game objects</a> ? <a href="runtime.html">Timers &amp; cleanup</a> ? <a href="data-tables.html">Reading data tables</a> ? <a href="debugging.html">Debugging</a> ? <a href="weapons.html">Weapon assemblies</a> ? <a href="attachments.html">Attachments &amp; rails</a> ? <a href="weapon-stats.html">Weapon stats</a> ? <a href="ballistics.html">Shots &amp; ballistics</a> ? <a href="targets.html">Finding &amp; tracking targets</a> ? <a href="scoring.html">Hits &amp; scoring</a> ? <a href="ranges.html">Range menus &amp; travel</a> ? <a href="workshop-ui.html">Workshop UI</a> ? <a href="progression.html">Ownership &amp; unlocks</a> ? <a href="saves.html">Reading &amp; backing up saves</a> ? <a href="multiplayer.html">Multiplayer architecture</a> ? <a href="paths.html">Game paths &amp; classes</a> ? <a href="custom-content.html">Custom content</a> ? <a href="packaging.html">Packaging a Lua mod</a> ? <a href="compatibility.html">Checking game updates</a> ? <a href="coverage.html">Coverage &amp; testing notes</a> ? <a href="tools.html">Tools &amp; resources</a></p></noscript>
+</body>
+</html>

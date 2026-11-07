@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Finding &amp; tracking targets | Ballistic Modding Wiki</title>
+  <meta name="description" content="Discover target actors and distinguish actor transforms from moving meshes.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="targets" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Finding &amp; tracking targets</h1><p class="lead">Find the range’s target actors, then inspect the component that actually moves.</p>
+<h2 id="discover-targets">Discover targets</h2><p>The inspected range uses <code>TargetBase_C</code> and derived classes. Get the active world from the viewport, then query that world:</p>
+<pre data-title="Read-only target discovery; run inside a range" data-language="lua"><code>local H = require(&quot;UEHelpers&quot;)
+
+ExecuteInGameThread(function()
+    local viewport = H.GetGameViewportClient()
+    if not viewport or not viewport:IsValid() then return end
+    local world = viewport:GetWorld()
+    if not world or not world:IsValid() then return end
+
+    local class = LoadAsset(
+        &quot;/Game/BlueprintLogic/Targets/TargetBase.TargetBase_C&quot;
+    )
+    if not class or not class:IsValid() then return end
+    local gameplay = StaticFindObject(&quot;/Script/Engine.Default__GameplayStatics&quot;)
+    local targets = {}
+    gameplay:GetAllActorsOfClass(world, class, targets)
+    print(&quot;[MyMod] Targets found: &quot; .. #targets .. &quot;\n&quot;)
+end</code></pre>
+<h2 id="target-fields">Useful fields</h2>
+<div class="table-scroll"><table><thead><tr><th>Field</th><th>Observed use</th></tr></thead><tbody><tr><td><code>HasBeenHit</code></td><td>Whether the target has been marked hit.</td></tr><tr><td><code>ValidForOneHitOnly</code></td><td>Reject further scoring hits after the first.</td></tr><tr><td><code>HitValue</code></td><td>Current target value.</td></tr><tr><td><code>MinHitValue</code></td><td>Lower bound used when reducing a value.</td></tr><tr><td><code>HitValueMultOnHit</code></td><td>Multiplier used by the local hit-state implementation.</td></tr><tr><td><code>isMoving</code></td><td>Hint used to prioritise moving target samples.</td></tr></tbody></table></div>
+<h2 id="actor-versus-component">Actor versus component motion</h2><p>A physics mesh can move while its owning actor’s transform stays unchanged. Capturing only <code>K2_GetActorLocation</code> can therefore show a target standing upright remotely while its mesh has fallen over locally.</p><p>Inspect the primitive, static-mesh or skeletal-mesh component that carries the visible body. Capture its world transform separately. Different target classes can need different component selection.</p>
+<h2 id="sampling-and-caching">Sampling and caching</h2><p>Discover actors infrequently and sample known targets on a bounded budget. Give moving and recently hit targets priority. A local registry once contained hundreds of targets; rediscovering or loading assets for every target on every frame is unnecessary.</p><p>Invalidate the registry after travel. Runtime addresses identify local objects only; they are not stable network IDs.</p>
+<h2 id="resetting-targets">Resetting targets</h2><p>Clearing <code>HasBeenHit</code> alone does not restore a broken target, a displaced physics body, its collision, or a reduced score value. A complete reset needs the original state of each relevant field and component. Restarting the range can be a more reliable first reset implementation.</p>
+<h2 id="tested-scope">What was checked</h2><p>Local discovery, target baselines, distinct synthetic targets and actor/component motion were tested. The documented registry strategy is a mod implementation, not a built-in replication service. The examples describe the local Windows demo setup. See <a href="compatibility.html">Checking game updates</a> before using them on another build.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> ? <a href="installation.html">Installing UE4SS</a> ? <a href="first-mod.html">Your first mod</a> ? <a href="hooks.html">Working with hooks</a> ? <a href="objects.html">Finding game objects</a> ? <a href="runtime.html">Timers &amp; cleanup</a> ? <a href="data-tables.html">Reading data tables</a> ? <a href="debugging.html">Debugging</a> ? <a href="weapons.html">Weapon assemblies</a> ? <a href="attachments.html">Attachments &amp; rails</a> ? <a href="weapon-stats.html">Weapon stats</a> ? <a href="ballistics.html">Shots &amp; ballistics</a> ? <a href="targets.html">Finding &amp; tracking targets</a> ? <a href="scoring.html">Hits &amp; scoring</a> ? <a href="ranges.html">Range menus &amp; travel</a> ? <a href="workshop-ui.html">Workshop UI</a> ? <a href="progression.html">Ownership &amp; unlocks</a> ? <a href="saves.html">Reading &amp; backing up saves</a> ? <a href="multiplayer.html">Multiplayer architecture</a> ? <a href="paths.html">Game paths &amp; classes</a> ? <a href="custom-content.html">Custom content</a> ? <a href="packaging.html">Packaging a Lua mod</a> ? <a href="compatibility.html">Checking game updates</a> ? <a href="coverage.html">Coverage &amp; testing notes</a> ? <a href="tools.html">Tools &amp; resources</a></p></noscript>
+</body>
+</html>

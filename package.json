@@ -7,6 +7,6 @@
     "dev": "node tools/serve.mjs --open",
     "preview": "node tools/serve.mjs",
     "build": "node tools/build.mjs",
-    "check": "node --check assets/js/site.js && node --check assets/js/theme.js && node tools/build.mjs"
+    "check": "node --check assets/js/navigation.js && node --check assets/js/site.js && node --check assets/js/theme.js && node tools/build.mjs"
   }
 }

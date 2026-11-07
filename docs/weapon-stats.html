@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Weapon stats | Ballistic Modding Wiki</title>
+  <meta name="description" content="Inspect current and installed ergonomics and diagnose attachment stat changes.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="weapon-stats" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Weapon stats</h1><p class="lead">Measure a baseline before trying to fix a stat that looks wrong.</p>
+<h2 id="part-and-weapon-values">Part values and weapon totals</h2>
+<div class="table-scroll"><table><thead><tr><th>Field</th><th>Where it was observed</th></tr></thead><tbody><tr><td><code>ErgoModifier</code></td><td>Per-part ergonomics modifier on C_WeaponPart.</td></tr><tr><td><code>TotalErgo</code></td><td>Weapon’s current ergonomics total.</td></tr><tr><td><code>TotalInstalledErgo</code></td><td>Separate installed-part ergonomics total.</td></tr><tr><td><code>TotalRecoilControlModifier</code></td><td>Weapon recoil-control aggregate.</td></tr><tr><td><code>ParentWeapon</code></td><td>Part’s associated weapon reference.</td></tr></tbody></table></div>
+<p>Current and installed ergonomics are different fields. Don’t substitute one for the other in an overlay. A part may also affect recoil, weight, cooling or grip behaviour rather than just ergonomics.</p>
+<h2 id="read-a-baseline">Read a baseline</h2>
+<pre data-title="Read-only stat snapshot" data-language="lua"><code>-- Context: gun is a valid live weapon, on the game thread.
+print(string.format(
+    &quot;[MyMod] current=%.6f installed=%.6f recoil=%.6f\n&quot;,
+    gun.TotalErgo,
+    gun.TotalInstalledErgo,
+    gun.TotalRecoilControlModifier
+))</code></pre>
+<h2 id="recalculation">Recalculation</h2><p>The Blueprint weapon base has <code>UpdateCharacteristicsFromParts</code>. Its nine boolean inputs in the inspected build are:</p>
+<pre data-title="Observed argument order" data-language="text"><code>Weight, Ergo, CenterMassLoc, Recoil, GripCenter, BarrelLength,
+EquippedScopeAndLaser, Cooling, TotalLength</code></pre>
+<p>This is a mutating recalculation function. Confirm the signature in your own dump before calling it. Prefer observing the normal attachment action first, rather than forcing a recalculation on every frame and masking a broken refresh chain.</p>
+<h2 id="a-removal-test">A removal test</h2><p>A local Sten fixture used a barrel strap and nested ergonomic broom grip. The grip’s modifier was approximately <code>+0.15</code>. Ten fit/remove cycles with the expanded compatibility hook active gave:</p>
+<div class="table-scroll"><table><thead><tr><th>Step</th><th>Installed ergo</th></tr></thead><tbody><tr><td>Rail-only baseline</td><td>−0.600000</td></tr><tr><td>Grip fitted</td><td>−0.450000</td></tr><tr><td>Grip removed</td><td>−0.600000</td></tr></tbody></table></div>
+<p>That fixture started negative and returned to the same negative baseline. It did not show a cumulative penalty. It was a synthetic assembly, so those numbers are not the correct expected totals for every player’s Sten.</p>
+<h2 id="report-a-stat-bug">Report a stat bug</h2><p>Include weapon/rail/attachment names, all three snapshots, game and loader versions, and whether the result survives leaving the workbench or restarting. Compare ordinary and expanded compatibility where possible.</p><p>Don’t clamp every negative number to zero. That can hide legitimate penalties and conceal the actual bug.</p>
+<h2 id="tested-scope">What was checked</h2><p>The ten-cycle fixture ran on 6 November 2026 and returned to baseline without manual refresh between cycles. The reported real-player rail-removal penalty remains unconfirmed. The examples describe the local Windows demo setup. See <a href="compatibility.html">Checking game updates</a> before using them on another build.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> ? <a href="installation.html">Installing UE4SS</a> ? <a href="first-mod.html">Your first mod</a> ? <a href="hooks.html">Working with hooks</a> ? <a href="objects.html">Finding game objects</a> ? <a href="runtime.html">Timers &amp; cleanup</a> ? <a href="data-tables.html">Reading data tables</a> ? <a href="debugging.html">Debugging</a> ? <a href="weapons.html">Weapon assemblies</a> ? <a href="attachments.html">Attachments &amp; rails</a> ? <a href="weapon-stats.html">Weapon stats</a> ? <a href="ballistics.html">Shots &amp; ballistics</a> ? <a href="targets.html">Finding &amp; tracking targets</a> ? <a href="scoring.html">Hits &amp; scoring</a> ? <a href="ranges.html">Range menus &amp; travel</a> ? <a href="workshop-ui.html">Workshop UI</a> ? <a href="progression.html">Ownership &amp; unlocks</a> ? <a href="saves.html">Reading &amp; backing up saves</a> ? <a href="multiplayer.html">Multiplayer architecture</a> ? <a href="paths.html">Game paths &amp; classes</a> ? <a href="custom-content.html">Custom content</a> ? <a href="packaging.html">Packaging a Lua mod</a> ? <a href="compatibility.html">Checking game updates</a> ? <a href="coverage.html">Coverage &amp; testing notes</a> ? <a href="tools.html">Tools &amp; resources</a></p></noscript>
+</body>
+</html>

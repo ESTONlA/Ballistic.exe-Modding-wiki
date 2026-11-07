@@ -1,0 +1,28 @@
+// Add a guide here, then run npm run check to validate it and rebuild search.
+window.WIKI_PAGES = [
+  ['introduction', 'Introduction', 'Getting started'],
+  ['installation', 'Installing UE4SS', 'Getting started'],
+  ['first-mod', 'Your first mod', 'Getting started'],
+  ['hooks', 'Working with hooks', 'Lua scripting'],
+  ['objects', 'Finding game objects', 'Lua scripting'],
+  ['runtime', 'Timers & cleanup', 'Lua scripting'],
+  ['data-tables', 'Reading data tables', 'Lua scripting'],
+  ['debugging', 'Debugging', 'Lua scripting'],
+  ['weapons', 'Weapon assemblies', 'Weapons'],
+  ['attachments', 'Attachments & rails', 'Weapons'],
+  ['weapon-stats', 'Weapon stats', 'Weapons'],
+  ['ballistics', 'Shots & ballistics', 'Weapons'],
+  ['targets', 'Finding & tracking targets', 'Ranges & targets'],
+  ['scoring', 'Hits & scoring', 'Ranges & targets'],
+  ['ranges', 'Range menus & travel', 'Ranges & targets'],
+  ['workshop-ui', 'Workshop UI', 'Menus & saves'],
+  ['progression', 'Ownership & unlocks', 'Menus & saves'],
+  ['saves', 'Reading & backing up saves', 'Menus & saves'],
+  ['multiplayer', 'Multiplayer architecture', 'Reference'],
+  ['paths', 'Game paths & classes', 'Reference'],
+  ['custom-content', 'Custom content', 'Reference'],
+  ['packaging', 'Packaging a Lua mod', 'Reference'],
+  ['compatibility', 'Checking game updates', 'Reference'],
+  ['coverage', 'Coverage & testing notes', 'Reference'],
+  ['tools', 'Tools & resources', 'Reference']
+];
