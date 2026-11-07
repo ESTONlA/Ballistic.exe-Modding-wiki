@@ -1,5 +1,7 @@
 # Ballistic Modding Wiki
 
+[![Game coverage: approximately 10%](https://img.shields.io/badge/Game_coverage-~10%25-5b8def?style=for-the-badge&labelColor=20232a)](#coverage)
+
 Setup notes, Lua guides and game references for modding Ballistic.exe.
 
 ## Coverage
