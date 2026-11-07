@@ -3,6 +3,7 @@ window.WIKI_PAGES = [
   ['introduction', 'Introduction', 'Getting started'],
   ['installation', 'Installing UE4SS', 'Getting started'],
   ['first-mod', 'Your first mod', 'Getting started'],
+  ['changelog', 'Changelog', 'Getting started'],
   ['hooks', 'Working with hooks', 'Lua scripting'],
   ['objects', 'Finding game objects', 'Lua scripting'],
   ['runtime', 'Timers & cleanup', 'Lua scripting'],
@@ -24,6 +25,5 @@ window.WIKI_PAGES = [
   ['packaging', 'Packaging a Lua mod', 'Reference'],
   ['compatibility', 'Checking game updates', 'Reference'],
   ['coverage', 'Coverage & testing notes', 'Reference'],
-  ['changelog', 'Changelog', 'Reference'],
   ['tools', 'Tools & resources', 'Reference']
 ];
