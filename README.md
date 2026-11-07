@@ -2,6 +2,14 @@
 
 Setup notes, Lua guides and game references for modding Ballistic.exe.
 
+## Coverage
+
+**About 10% of the game's modding systems documented so far.** This is a rough estimate based on the demo, not a measured count of every class or asset.
+
+Covered: UE4SS setup, a first Lua mod, hooks, object lookup, debugging, and a few workshop functions and game paths.
+
+Still to document: weapon and attachment systems in depth, ammunition and ballistics, targets and scoring, progression and saves, and detailed UI and range behaviour.
+
 ## Run locally
 
 ```sh
