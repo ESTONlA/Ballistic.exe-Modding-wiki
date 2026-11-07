@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Debugging | Ballistic Modding Wiki</title>
+  <meta name="description" content="Read loader logs and isolate Lua errors, missing hooks and crashes.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="debugging" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Debugging</h1><p class="lead">Start with the log and a repeatable set of steps.</p>
+<h2 id="read-the-log">Read the log</h2><p>In the layout used here, the loader log is <code>Ballistic/Binaries/Win64/ue4ss/UE4SS.log</code>. Check its timestamp and search for your mod’s prefix.</p><p>Log when your script loads, when a hook installs and when the relevant callback runs. Those are three different checks.</p>
+<pre data-title="Give your logs a prefix" data-language="lua"><code>local function log(message)
+    print("[MyFirstMod] " .. tostring(message) .. "\n")
+end
+
+log("Script loaded.")</code></pre>
+<h2 id="common-errors">Common errors</h2>
+<div class="table-scroll"><table><thead><tr><th>Symptom</th><th>What to check</th></tr></thead><tbody><tr><td>No log message</td><td>Mod folder, enabled.txt, script filename and extraction location.</td></tr><tr><td>Object is invalid</td><td>Whether the asset is loaded and whether the world or menu changed.</td></tr><tr><td>Hook never runs</td><td>Exact function path, loaded class and whether the game uses that event.</td></tr><tr><td>TrivialObject is not callable</td><td>Whether the method is reflected in this game build.</td></tr><tr><td>Freeze while iterating</td><td>Container type, loop bounds and recursive hook calls.</td></tr><tr><td>Native access violation</td><td>The full crash stack, last callback and recently accessed engine objects.</td></tr></tbody></table></div>
+<h2 id="handle-lua-errors">Handle Lua errors</h2><p>A protected call can log a Lua failure and stop that operation:</p>
+<pre data-title="Protected Lua call" data-language="lua"><code>local ok, err = pcall(function()
+    -- Run one operation you are investigating here.
+end)
+
+if not ok then
+    print("[MyFirstMod] " .. tostring(err) .. "\n")
+end</code></pre>
+<p><code>pcall</code> does not make an invalid native pointer safe. If the process crashes inside the engine or loader, simplify the callback and inspect the native stack.</p>
+<h2 id="reproduce-a-problem">Reproduce a problem</h2><ol><li>Write down the game build, loader version and mod version.</li><li>Use a minimal setup with the mods needed for the test.</li><li>Record the exact weapon, part or menu involved.</li><li>Compare the result before and after the operation.</li><li>Restart fully, then repeat the same steps.</li></ol><p>For a stat problem, record the value before fitting a part, after fitting it, and after removing it. “It went negative” doesn’t show whether the value dropped below its original baseline.</p>
+<h2 id="after-an-update">After a game update</h2><p>Check function paths and signatures again. Confirm asset availability, menu construction and save behaviour separately. A successful startup log only proves that startup completed.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> · <a href="installation.html">Installation</a> · <a href="first-mod.html">First mod</a> · <a href="hooks.html">Hooks</a> · <a href="objects.html">Objects</a> · <a href="debugging.html">Debugging</a> · <a href="paths.html">Paths</a> · <a href="custom-content.html">Custom content</a> · <a href="tools.html">Tools</a></p></noscript>
+</body>
+</html>

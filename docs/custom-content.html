@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Custom content | Ballistic Modding Wiki</title>
+  <meta name="description" content="Understand runtime Lua changes and the limits of cooked assets.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="custom-content" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Custom content</h1><p class="lead">Know which changes can reuse game assets and which need an asset pipeline.</p>
+<h2 id="lua-only-mods">Lua-only mods</h2><p>Lua is useful for changing behaviour, creating UI and assembling objects from assets already cooked into the game. You can prototype layouts by spawning existing meshes and components in the current world.</p><p>That does not create a new cooked map. The scene still belongs to the existing world, with its lighting, streaming and lifecycle.</p>
+<h2 id="new-models-and-textures">New models and textures</h2><p>An external <code>.fbx</code> file is a source model, not a game-ready Unreal asset. A Lua script cannot simply use an FBX path as a normal skeletal mesh reference.</p><p>Proper mesh, material and animation integration generally needs compatible cooked assets or a dedicated runtime importer. This wiki does not provide an importer.</p>
+<h2 id="opening-the-game-in-unreal">Opening the game in Unreal</h2><p>The installed game contains cooked content, rather than the developer’s editable source project. Installing Unreal Editor does not restore the original Blueprints, levels or source assets.</p><p>The local executable reported the <code>UE5.7</code> release branch. That is useful context when investigating tools, but it does not establish that any specific editor patch will produce compatible content.</p>
+<h2 id="runtime-scene-checklist">Testing a runtime scene</h2><ul><li>Check mesh and material availability in the actual game build.</li><li>Test lighting and exposure in the world where you spawn objects.</li><li>Verify collision and a safe player spawn.</li><li>Keep references to the actors your mod owns.</li><li>Remove them when the scene closes or the world changes.</li></ul>
+<h2 id="further-reading">Further reading</h2><p><a href="https://github.com/Dmgvol/UE_Modding">Dmgvol’s UE modding guides</a> cover several Unreal modding approaches. Start with <a href="tools.html">Tools &amp; resources</a> for the loader and archive-inspection references used here.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> · <a href="installation.html">Installation</a> · <a href="first-mod.html">First mod</a> · <a href="hooks.html">Hooks</a> · <a href="objects.html">Objects</a> · <a href="debugging.html">Debugging</a> · <a href="paths.html">Paths</a> · <a href="custom-content.html">Custom content</a> · <a href="tools.html">Tools</a></p></noscript>
+</body>
+</html>

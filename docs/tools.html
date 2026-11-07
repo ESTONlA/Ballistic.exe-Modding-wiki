@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tools &amp; resources | Ballistic Modding Wiki</title>
+  <meta name="description" content="Primary documentation and tools for inspecting and scripting Unreal games.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="tools" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Tools &amp; resources</h1><p class="lead">The main references to keep open while you work.</p>
+<h2 id="ue4ss">UE4SS</h2><p>The loader runs Lua mods and exposes Unreal objects and functions. Match API guidance to your installed version; the development documentation may describe APIs newer than your local loader.</p><ul><li><a href="https://github.com/UE4SS-RE/RE-UE4SS/releases">Releases and downloads</a></li><li><a href="https://docs.ue4ss.com/dev/installation-guide.html">Installation guide</a></li><li><a href="https://docs.ue4ss.com/dev/">Development documentation</a></li><li><a href="https://docs.ue4ss.com/dev/lua-api.html">Lua API overview</a></li></ul>
+<h2 id="game-inspection">Game inspection</h2><p>Start with the UE4SS object viewer and object dump to inspect what the current game session has loaded. Use an archive browser when you need to look for cooked content that isn’t loaded yet.</p><ul><li><a href="https://github.com/4sval/FModel">FModel</a> — Unreal archive browser.</li><li><a href="https://github.com/4sval/FModel/wiki/Getting-Started">FModel getting started</a> — configuration and usage.</li></ul><p>Tool support depends on the game’s engine and archive format. Finding an asset in an archive does not guarantee it can be loaded in every game mode.</p>
+<h2 id="unreal-modding">Unreal modding</h2><p><a href="https://github.com/Dmgvol/UE_Modding">UE_Modding by Dmgvol</a> collects techniques and guides for Unreal games. Use it to research asset-based mods alongside the Lua approach described here.</p>
+<h2 id="the-game">The game</h2><ul><li><a href="https://store.steampowered.com/app/3432980/Ballisticexe/">Ballistic.exe on Steam</a></li></ul><p>This wiki documents local observations and practical examples. It does not ship a game framework, SDK or game assets.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> · <a href="installation.html">Installation</a> · <a href="first-mod.html">First mod</a> · <a href="hooks.html">Hooks</a> · <a href="objects.html">Objects</a> · <a href="debugging.html">Debugging</a> · <a href="paths.html">Paths</a> · <a href="custom-content.html">Custom content</a> · <a href="tools.html">Tools</a></p></noscript>
+</body>
+</html>

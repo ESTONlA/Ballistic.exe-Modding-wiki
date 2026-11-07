@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Your first mod | Ballistic Modding Wiki</title>
+  <meta name="description" content="Create and enable a simple UE4SS Lua mod.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="first-mod" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Your first mod</h1><p class="lead">Create a mod folder, write one Lua file, and check that it runs.</p>
+<h2 id="create-the-folder">Create the folder</h2><p>Inside your loader’s <code>Mods</code> folder, create <code>MyFirstMod</code>. Add a <code>Scripts</code> folder and an empty file named <code>enabled.txt</code>.</p>
+<pre data-title="Mod folder" data-language="text"><code>ue4ss/Mods/
+└── MyFirstMod/
+    ├── enabled.txt
+    └── Scripts/
+        └── main.lua</code></pre>
+<p>Enable file extensions in Windows Explorer so the script isn’t accidentally saved as <code>main.lua.txt</code>.</p>
+<h2 id="write-the-script">Write the script</h2><p>Open <code>main.lua</code> in a text editor and add:</p>
+<pre data-title="Scripts/main.lua" data-language="lua"><code>local function log(message)
+    print("[MyFirstMod] " .. message .. "\n")
+end
+
+log("Loaded successfully.")</code></pre>
+<p>Use a distinct prefix in every log message. It makes your output easy to find when several mods are enabled.</p>
+<h2 id="run-the-mod">Run the mod</h2><ol><li>Save the file.</li><li>Fully close and restart the game.</li><li>Open <code>ue4ss/UE4SS.log</code>.</li><li>Search for <code>[MyFirstMod] Loaded successfully.</code></li></ol><p>If the message appears, your script is loading. If it doesn’t, check the folder names and the log’s Lua errors.</p>
+<h2 id="add-a-keybind">Add a keybind</h2><p>This example logs a message when you press F9. Choose a key that does not conflict with another mod.</p>
+<pre data-title="Add to main.lua" data-language="lua"><code>RegisterKeyBind(Key.F9, function()
+    print("[MyFirstMod] F9 pressed.\n")
+end</code></pre>
+<aside class="callout"><div class="callout-title">Keep engine work on the game thread</div><p>A log message is a small first test. If your keybind changes Unreal objects, schedule that work with <code>ExecuteInGameThread</code>. See <a href="objects.html">Finding game objects</a>.</p></aside>
+<h2 id="disable-or-share">Disable or share the mod</h2><p>With the game closed, remove the mod’s <code>enabled.txt</code> to disable it. For a small Lua-only release, package your mod folder, scripts and enable marker with clear installation instructions. Don’t bundle the game, saves, logs or your entire UE4SS installation.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> · <a href="installation.html">Installation</a> · <a href="first-mod.html">First mod</a> · <a href="hooks.html">Hooks</a> · <a href="objects.html">Objects</a> · <a href="debugging.html">Debugging</a> · <a href="paths.html">Paths</a> · <a href="custom-content.html">Custom content</a> · <a href="tools.html">Tools</a></p></noscript>
+</body>
+</html>

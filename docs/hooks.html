@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Working with hooks | Ballistic Modding Wiki</title>
+  <meta name="description" content="Find loaded functions and register a hook without repeated installation.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="hooks" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Working with hooks</h1><p class="lead">A hook runs your code when the game calls an Unreal function.</p>
+<h2 id="find-a-function">Find a function</h2><p>Use the UE4SS object viewer or an object dump to locate the exact reflected function path. Class names and function names are case-sensitive. A Blueprint function often has a path like this:</p>
+<pre data-title="Observed workshop function" data-language="text"><code>/Game/UI/HUD/Workshop/BunkerHUDItems/Attach_POI.Attach_POI_C:GetCompatibleMountsRecursive</code></pre>
+<p>This path was observed in the demo’s attachment UI. It may not be loaded until workshop assets are present.</p>
+<h2 id="wait-for-the-function">Wait for the function</h2><p>Don’t assume a Blueprint is available when <code>main.lua</code> first runs. Check for it on the game thread, and register your hook once.</p>
+<pre data-title="Read-only workshop hook" data-language="lua"><code>local path = "/Game/UI/HUD/Workshop/BunkerHUDItems/Attach_POI.Attach_POI_C:GetCompatibleMountsRecursive"
+local installed = false
+
+LoopAsync(2000, function()
+    if installed then return end
+
+    ExecuteInGameThread(function()
+        if installed then return end
+        local fn = StaticFindObject(path)
+        if not fn or not fn:IsValid() then return end
+
+        RegisterHook(path, function(context)
+            local object = context:get()
+            if not object or not object:IsValid() then return end
+            print("[MyFirstMod] Workshop lookup called.\n")
+        end)
+
+        installed = true
+        print("[MyFirstMod] Hook installed.\n")
+    end)
+end</code></pre>
+<h2 id="read-parameters">Read parameters carefully</h2><p>Hook arguments can be UE4SS parameter wrappers. Use the access pattern documented for the parameter’s type, and inspect the signature before reading or changing it. Callback phase and return-parameter behaviour can differ between native and Blueprint functions.</p><p>The sample above only reads the context and logs a call. It does not alter mount compatibility or attachments.</p>
+<h2 id="avoid-common-mistakes">Avoid common mistakes</h2><ul><li>Don’t install the same hook on every timer tick.</li><li>Don’t call the hooked function from its own callback unless you have a deliberate recursion guard.</li><li>Don’t assume a path from an older game build is still correct.</li><li>Don’t use a Lua error handler as protection against native memory crashes.</li></ul><p>Check the <a href="https://docs.ue4ss.com/dev/">UE4SS API documentation</a> for your loader version before writing to parameters or relying on pre/post callbacks.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> · <a href="installation.html">Installation</a> · <a href="first-mod.html">First mod</a> · <a href="hooks.html">Hooks</a> · <a href="objects.html">Objects</a> · <a href="debugging.html">Debugging</a> · <a href="paths.html">Paths</a> · <a href="custom-content.html">Custom content</a> · <a href="tools.html">Tools</a></p></noscript>
+</body>
+</html>

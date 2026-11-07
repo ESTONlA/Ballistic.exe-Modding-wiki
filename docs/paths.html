@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Game paths &amp; classes | Ballistic Modding Wiki</title>
+  <meta name="description" content="Observed executable paths, save locations and reflected classes from the demo.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="paths" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Game paths &amp; classes</h1><p class="lead">Useful locations and names observed in the Windows demo.</p>
+<aside class="callout"><div class="callout-title">Build-specific reference</div><p>These paths were checked locally on Steam demo build <code>26083142</code>. They are a starting point for discovery, not a promise that another release has the same objects.</p></aside>
+<h2 id="file-locations">File locations</h2>
+<div class="table-scroll"><table><thead><tr><th>Location</th><th>Purpose</th></tr></thead><tbody><tr><td><code>Ballistic/Binaries/Win64/</code></td><td>Shipping executable and loader entry point.</td></tr><tr><td><code>Win64/ue4ss/Mods/</code></td><td>Mod folders in the tested loader layout.</td></tr><tr><td><code>Win64/ue4ss/UE4SS.log</code></td><td>Loader and Lua output; paths here start at Binaries.</td></tr><tr><td><code>%LOCALAPPDATA%/Ballistic/Saved/SaveGames/</code></td><td>Player saves. Keep these out of mod releases.</td></tr><tr><td><code>Ballistic/Content/Paks/</code></td><td>Cooked game content archives.</td></tr></tbody></table></div>
+<h2 id="workshop-functions">Workshop functions</h2><p>The attachment point widget uses this class path:</p>
+<pre data-title="Attachment point widget" data-language="text"><code>/Game/UI/HUD/Workshop/BunkerHUDItems/Attach_POI.Attach_POI_C</code></pre>
+<div class="table-scroll"><table><thead><tr><th>Function</th><th>Observed role</th></tr></thead><tbody><tr><td><code>GetCompatibleMountsRecursive</code></td><td>Mount-compatibility lookup.</td></tr><tr><td><code>OnGetUserMenuContent</code></td><td>Attachment popup creation.</td></tr><tr><td><code>SetupAttachment</code></td><td>Fitting or removing an attachment.</td></tr></tbody></table></div>
+<p>The workshop HUD is <code>/Game/UI/HUD/Workshop/HUD_Workshop.HUD_Workshop_C</code>. Its attachment editor is named <code>WeaponEditMOde</code>; preserve that spelling when looking it up.</p>
+<h2 id="weapon-classes">Weapon classes</h2>
+<pre data-title="Observed base classes" data-language="text"><code>/Game/BlueprintLogic/Weapons/A_WeaponBase.A_WeaponBase_C
+/Script/Ballistic.C_WeaponBase
+/Script/Ballistic.C_WeaponPart</code></pre>
+<p>The Blueprint weapon base exposes <code>UpdateCharacteristicsFromParts</code>. In the inspected build it has nine boolean inputs. Check the full signature in your own dump before calling it.</p>
+<h2 id="maps">Maps</h2>
+<div class="table-scroll"><table><thead><tr><th>Name</th><th>Observed use</th></tr></thead><tbody><tr><td><code>Bunker_Main</code></td><td>Bunker and workshop.</td></tr><tr><td><code>Range_SwimmingPool</code></td><td>Azure Swimming Pool range.</td></tr></tbody></table></div>
+<p>The confirmed pool package is <code>/Game/Maps/Ranges/Range_SwimmingPool</code>. A range row or menu label alone does not prove that its associated map is included in the demo.</p>
+<h2 id="check-your-build">Check your build</h2><p>Use the loader’s object viewer or dump to confirm paths. Keep a small text record of the build, object name, signature and action you tested. See <a href="debugging.html">Debugging</a> for a repeatable check.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> · <a href="installation.html">Installation</a> · <a href="first-mod.html">First mod</a> · <a href="hooks.html">Hooks</a> · <a href="objects.html">Objects</a> · <a href="debugging.html">Debugging</a> · <a href="paths.html">Paths</a> · <a href="custom-content.html">Custom content</a> · <a href="tools.html">Tools</a></p></noscript>
+</body>
+</html>

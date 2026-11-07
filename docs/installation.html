@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Installing UE4SS | Ballistic Modding Wiki</title>
+  <meta name="description" content="Install the loader beside the game’s shipping executable.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="installation" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Installing UE4SS</h1><p class="lead">Set up the loader, then check the log before adding a mod.</p>
+<h2 id="what-you-need">What you need</h2><ul><li>The Windows version of Ballistic.exe.</li><li>A UE4SS release compatible with your game build.</li><li>A text editor, such as Visual Studio Code.</li></ul>
+<p>The local demo tests used UE4SS <code>3.0.1 Beta #0</code>, commit <code>5e627997</code>. This records a tested setup; it is not a recommendation to overwrite a working installation with a different release.</p>
+<p>Downloads: <a href="https://github.com/UE4SS-RE/RE-UE4SS/releases">UE4SS releases</a> · <a href="https://github.com/UE4SS-RE/RE-UE4SS/releases/tag/experimental-latest">Experimental builds</a>.</p>
+<h2 id="find-the-game-folder">Find the game folder</h2><p>In Steam, open the game’s settings and choose <strong>Manage → Browse local files</strong>. From there, open:</p>
+<pre data-title="Game executable directory" data-language="text"><code>Ballistic/Binaries/Win64/</code></pre>
+<p>You should see <code>Ballistic-Win64-Shipping.exe</code>. The smaller <code>Ballistic.exe</code> in the game’s top-level folder is a launcher. Install the loader beside the shipping executable.</p>
+<h2 id="install-the-loader">Install the loader</h2><ol><li>Close the game.</li><li>Extract the chosen UE4SS package beside the shipping executable, preserving the package’s folder layout.</li><li>Merge folders carefully if you already have other mods installed.</li><li>Launch the game once, then close it and inspect the log.</li></ol>
+<p>The setup used for these guides has the following layout. Other loader packages can use a different working directory; follow the <a href="https://docs.ue4ss.com/dev/installation-guide.html">installation instructions for your release</a>.</p>
+<pre data-title="Example installed layout" data-language="text"><code>Win64/
+├── Ballistic-Win64-Shipping.exe
+├── dwmapi.dll
+└── ue4ss/
+    ├── UE4SS.dll
+    ├── UE4SS-settings.ini
+    ├── UE4SS.log
+    └── Mods/</code></pre>
+<h2 id="check-the-log">Check the log</h2><p>Open <code>ue4ss/UE4SS.log</code>. Look for the loader version and startup messages. The file should have a fresh timestamp from your last launch.</p><p>If it is missing or unchanged, check the extraction location and that the files match your loader release. If the game crashes before mods load, resolve the loader setup before adding scripts.</p>
+<h2 id="next-step">Next step</h2><p>Continue to <a href="first-mod.html">Your first mod</a> to create a script and verify it with a unique log message.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> · <a href="installation.html">Installation</a> · <a href="first-mod.html">First mod</a> · <a href="hooks.html">Hooks</a> · <a href="objects.html">Objects</a> · <a href="debugging.html">Debugging</a> · <a href="paths.html">Paths</a> · <a href="custom-content.html">Custom content</a> · <a href="tools.html">Tools</a></p></noscript>
+</body>
+</html>

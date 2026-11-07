@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Introduction | Ballistic Modding Wiki</title>
+  <meta name="description" content="Getting started with Lua modding for Ballistic.exe.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="introduction" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Introduction</h1>
+<p class="lead">A practical guide to modding Ballistic.exe with UE4SS and Lua.</p>
+<p>This wiki covers setting up your mod folder, finding game objects, hooking functions and troubleshooting scripts. Start with a small change, check it in-game, and build from there.</p>
+<p>You don’t need Unreal Editor for the Lua examples here. UE4SS loads your scripts alongside the game and lets them interact with objects and functions that Unreal exposes at runtime.</p>
+<aside class="callout"><div class="callout-title">Before you start</div><p>The examples come from the Windows demo. Game updates can change class names, functions and file layouts. Keep a backup of your saves and check your own build’s log when something behaves differently.</p></aside>
+<h2 id="getting-started">Getting started</h2>
+<p>If you’re new to Unreal modding, follow these pages in order.</p>
+<div class="table-scroll"><table><thead><tr><th>Guide</th><th>What you’ll do</th></tr></thead><tbody><tr><td><a href="installation.html">Installing UE4SS</a></td><td>Set up the loader and check that it starts.</td></tr><tr><td><a href="first-mod.html">Your first mod</a></td><td>Create a Lua script and find its output in the log.</td></tr><tr><td><a href="hooks.html">Working with hooks</a></td><td>Run code when a game function is called.</td></tr><tr><td><a href="debugging.html">Debugging</a></td><td>Track down missing objects, Lua errors and crashes.</td></tr></tbody></table></div>
+<h2 id="what-lua-can-do">What can you do with Lua?</h2>
+<p>Lua mods can inspect loaded objects, call reflected functions, respond to game events and create UI using assets the game already contains. Some changes need only a few lines of code.</p>
+<ul><li>Adjust workshop behaviour and add controls to existing menus.</li><li>Read weapon or target information for tools and overlays.</li><li>Spawn and arrange existing assets at runtime.</li><li>Add keybinds, diagnostics and small quality-of-life changes.</li></ul>
+<p>These are starting points, not a guarantee that every game system is accessible. See <a href="custom-content.html">Custom content</a> for the limits of a Lua-only mod.</p>
+<h2 id="a-small-example">A small example</h2>
+<p>A mod begins with <code>Scripts/main.lua</code>. This is enough to check that the loader is running your file:</p>
+<pre data-title="Scripts/main.lua" data-language="lua"><code>print("[MyFirstMod] Hello from Ballistic!\n")</code></pre>
+<p>The message appears in <code>ue4ss/UE4SS.log</code> after you launch the game. The <a href="first-mod.html">first mod guide</a> shows the complete folder structure.</p>
+<h2 id="using-this-wiki">Using this wiki</h2>
+<p>Use the sidebar to browse, or press <kbd>Ctrl</kbd> + <kbd>K</kbd> to search the text of every guide. Each article has links to its sections and a copy button beside code examples.</p>
+<p>For the complete loader API, use the <a href="https://docs.ue4ss.com/dev/">UE4SS documentation</a>. The game-specific paths here are observations from the demo, rather than a supported game SDK.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> · <a href="installation.html">Installation</a> · <a href="first-mod.html">First mod</a> · <a href="hooks.html">Hooks</a> · <a href="objects.html">Objects</a> · <a href="debugging.html">Debugging</a> · <a href="paths.html">Paths</a> · <a href="custom-content.html">Custom content</a> · <a href="tools.html">Tools</a></p></noscript>
+</body>
+</html>

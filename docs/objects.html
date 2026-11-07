@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Finding game objects | Ballistic Modding Wiki</title>
+  <meta name="description" content="Locate objects and respect their lifetime and thread requirements.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="objects" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Finding game objects</h1><p class="lead">Find an object, check that it is valid, then use it while it still belongs to the current world.</p>
+<h2 id="loaded-objects">Loaded objects</h2><p><code>StaticFindObject</code> looks up an object that is already loaded. It does not automatically load every asset from the game archive.</p>
+<pre data-title="Inspect a loaded data table" data-language="lua"><code>ExecuteInGameThread(function()
+    local object = StaticFindObject(
+        "/Game/Data/Weapons/Attachment_Data.Attachment_Data"
+    )
+
+    if not object or not object:IsValid() then
+        print("[MyFirstMod] Attachment table is not loaded yet.\n")
+        return
+    end
+
+    print("[MyFirstMod] " .. object:GetFullName() .. "\n")
+end</code></pre>
+<h2 id="instances-and-defaults">Instances and defaults</h2><p>A class describes an object type. A class default object contains its default values. A live actor or widget is an instance. Editing a default is not the same as changing the weapon or menu the player is currently using.</p><p>Read the full object name and confirm which object you found before writing to it.</p>
+<h2 id="world-changes">World changes</h2><p>Travelling from the bunker to a range replaces many actors and widgets. A reference that worked before travel can become invalid afterwards.</p><ul><li>Reacquire world-specific objects after travel.</li><li>Check validity immediately before use.</li><li>Clear cached widget references when the menu is destroyed.</li><li>Keep track of actors your mod spawns so you can clean them up.</li></ul>
+<h2 id="arrays-and-containers">Arrays and containers</h2><p>Unreal containers exposed through UE4SS are not always ordinary Lua tables. In this local loader, using <code>ipairs</code> on some Unreal arrays continued beyond the reported length. A bounded loop worked for those arrays:</p>
+<pre data-title="Pattern inside a callback with a valid editor" data-language="lua"><code>local points = editor.POIs
+local count = #points
+assert(count &lt;= 512, "Unexpected attachment-point count")
+
+for i = 1, count do
+    local point = points[i]
+    if point and point:IsValid() then
+        print(point:GetFullName() .. "\n")
+    end
+end</code></pre>
+<p>This example requires a valid <code>editor</code> instance. Set and map containers have different APIs; don’t apply the array pattern to every container.</p>
+<h2 id="reflected-methods">Reflected methods</h2><p>Use methods present in the dump for your build. For actor transforms, the local bindings exposed <code>K2_GetActorLocation</code> and <code>K2_GetActorRotation</code>. Calling an unavailable method produced a <code>TrivialObject</code> error rather than a normal Lua function call.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> · <a href="installation.html">Installation</a> · <a href="first-mod.html">First mod</a> · <a href="hooks.html">Hooks</a> · <a href="objects.html">Objects</a> · <a href="debugging.html">Debugging</a> · <a href="paths.html">Paths</a> · <a href="custom-content.html">Custom content</a> · <a href="tools.html">Tools</a></p></noscript>
+</body>
+</html>
