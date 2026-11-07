@@ -7,6 +7,8 @@ Setup notes, Lua guides and game references for modding Ballistic.exe.
 
 There are 25 guides now, including weapons, attachments, stats, shot/hit events, targets, scoring, workshop UI, ranges, saves and multiplayer architecture. The [coverage page](docs/coverage.html) lists what’s covered and what still needs research. The percentage is still a rough estimate, not an audited count of the whole game.
 
+New pages, corrections and site changes go in the [changelog](docs/changelog.html).
+
 ## Run locally
 
 ```sh

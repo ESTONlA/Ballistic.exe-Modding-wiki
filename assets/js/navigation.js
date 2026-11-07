@@ -24,5 +24,6 @@ window.WIKI_PAGES = [
   ['packaging', 'Packaging a Lua mod', 'Reference'],
   ['compatibility', 'Checking game updates', 'Reference'],
   ['coverage', 'Coverage & testing notes', 'Reference'],
+  ['changelog', 'Changelog', 'Reference'],
   ['tools', 'Tools & resources', 'Reference']
 ];

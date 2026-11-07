@@ -31,3 +31,7 @@ Link to the original documentation when it helps. Don’t include game assets, s
 ## Before opening the PR
 
 Make sure the check passes, links work, and code examples still copy correctly. Mention anything you couldn’t verify. Leave generated builds, browser profiles and other local files out of the PR.
+
+Add a short entry under **Next update** in `docs/changelog.html` for new guides, useful corrections or site changes. Use **Added**, **Changed** or **Fixed** as needed; skip empty categories. Describe what changed for someone reading the wiki, rather than listing implementation steps. Typo-only fixes don’t need an entry.
+
+When publishing an update, give that section a date, move it above the older entries, and leave a fresh **Next update** section at the top. Keep the existing history.
