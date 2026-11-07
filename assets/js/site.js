@@ -78,7 +78,10 @@
   document.querySelector('.theme-toggle').addEventListener('click',() => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'));
   const mobileMenu = document.createElement('dialog'); mobileMenu.className = 'mobile-menu'; mobileMenu.setAttribute('aria-label','Documentation navigation');
   mobileMenu.innerHTML = `<div class="menu-header">Documentation<button class="icon-button" aria-label="Close navigation">${icon('close')}</button></div>${nav()}${footer}`; document.body.append(mobileMenu);
-  document.querySelector('.menu-toggle').addEventListener('click',() => mobileMenu.showModal());
+  document.querySelector('.menu-toggle').addEventListener('click',() => {
+    mobileMenu.showModal();
+    mobileMenu.querySelector('[aria-current="page"]')?.scrollIntoView({block:'nearest'});
+  });
   mobileMenu.querySelector('button').addEventListener('click',() => mobileMenu.close());
   mobileMenu.addEventListener('click',e => { if(e.target === mobileMenu && e.clientX > mobileMenu.getBoundingClientRect().right) mobileMenu.close(); });
   window.addEventListener('resize',() => { if(innerWidth > 760 && mobileMenu.open) mobileMenu.close(); });
@@ -97,14 +100,33 @@
   document.body.append(search);
   const searchInput = search.querySelector('input'), resultBox = search.querySelector('.search-results'); let selected = 0;
   function results() {
-    const words = searchInput.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    const query = searchInput.value.toLowerCase().trim();
+    const words = query.split(/\s+/).filter(Boolean);
     const source = window.WIKI_SEARCH || pages.map(p => ({id:p[0],title:p[1],text:p[2]}));
-    const found = source.filter(p => words.every(w => `${p.title} ${p.text}`.toLowerCase().includes(w))).slice(0,9);
+    const matches = source.map((page,index) => {
+      const title = page.title.toLowerCase(), body = page.text.toLowerCase();
+      if(!words.every(w => `${title} ${body}`.includes(w))) return null;
+      let bestSection = null, bestScore = -1;
+      for(const section of page.sections || []) {
+        const heading = section.title.toLowerCase(), sectionText = `${heading} ${section.text.toLowerCase()}`;
+        if(!words.length || !words.every(w => sectionText.includes(w))) continue;
+        const score = (heading === query ? 70 : heading.includes(query) ? 35 : 0) + words.filter(w => heading.includes(w)).length * 10;
+        if(score > bestScore) { bestScore = score; bestSection = section; }
+      }
+      const score = words.length ? (title === query ? 200 : title.startsWith(query) ? 120 : title.includes(query) ? 80 : 0)
+        + words.filter(w => title.includes(w)).length * 25 + Math.max(0,bestScore) : 0;
+      const section = words.length && !words.every(w => title.includes(w)) ? bestSection : null;
+      return {page,section,score,index};
+    }).filter(Boolean).sort((a,b) => b.score-a.score || a.index-b.index);
+    const found = matches.slice(0,20);
+    search.querySelector('.search-caption').textContent = `${matches.length} matching ${matches.length === 1 ? 'page' : 'pages'}${matches.length > found.length ? ` · first ${found.length} shown` : ''} · ↑ ↓ navigate · Enter open · Esc close`;
     selected = 0;
-    resultBox.innerHTML = found.length ? found.map((p,i) => {
-      const pos = words.length ? p.text.toLowerCase().indexOf(words[0]) : 0;
-      const snippet = p.text.slice(Math.max(0,pos-35),Math.max(0,pos-35)+120);
-      return `<a role="option" aria-selected="${i === 0}" class="search-result" href="${p.id}.html"><strong>${esc(p.title)}</strong><span>${esc(snippet)}…</span></a>`;
+    resultBox.innerHTML = found.length ? found.map(({page,section},i) => {
+      const text = section?.text || page.text;
+      const pos = words.length ? text.toLowerCase().indexOf(words[0]) : 0;
+      const snippet = text.slice(Math.max(0,pos-35),Math.max(0,pos-35)+120);
+      const href = `${page.id}.html${section ? '#'+encodeURIComponent(section.id) : ''}`;
+      return `<a role="option" aria-selected="${i === 0}" class="search-result" href="${href}"><strong>${esc(page.title)}</strong><span>${section ? esc(section.title)+' · ' : ''}${esc(snippet)}…</span></a>`;
     }).join('') : '<p class="search-empty">No matching pages. Try a class name, function or topic.</p>';
   }
   const openSearch = () => { if(mobileMenu.open) mobileMenu.close(); if(!search.open) search.showModal(); results(); searchInput.focus(); };
@@ -145,4 +167,5 @@
   window.addEventListener('resize',queueTocUpdate);
   window.addEventListener('hashchange',queueTocUpdate);
   queueTocUpdate();
+  if(innerWidth > 760)requestAnimationFrame(() => document.querySelector('.sidebar [aria-current="page"]')?.scrollIntoView({block:'nearest'}));
 })();

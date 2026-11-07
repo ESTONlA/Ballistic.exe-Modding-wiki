@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Worlds, players &amp; controllers | Ballistic Modding Wiki</title>
+  <meta name="description" content="Resolve the right world, controller, pawn, game instance and network role.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="player-world" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Worlds, players &amp; controllers</h1><p class="lead">Resolve the right world, controller, pawn, game instance and network role.</p>
+<h2 id="context-chain">The context chain</h2>
+<p>For a local feature, begin with the game viewport’s world and resolve the local controller from that world. The controller owns input context; its pawn is the possessed actor. Game instance, game mode and game state have different lifetimes and authority roles, so don’t treat them as synonyms for “the game”.</p><div class="table-scroll"><table><thead><tr><th>Object</th><th>Why a mod may need it</th></tr></thead><tbody><tr><td>Viewport / UWorld</td><td>Identify the current runtime world.</td></tr><tr><td>PlayerController</td><td>Local input, pawn and camera context.</td></tr><tr><td>Pawn</td><td>Equipped weapon and player movement context.</td></tr><tr><td>GameInstance</td><td>Cross-map selections and observed progression data.</td></tr><tr><td>GameMode</td><td>Authoritative mode/travel decisions where available.</td></tr><tr><td>GameState / PlayerState</td><td>Shared roster and player information.</td></tr></tbody></table></div>
+<h2 id="resolver">1. Resolve and check each link</h2>
+<pre data-title="Read-only local context resolution" data-language="lua"><code>local H = require(&quot;UEHelpers&quot;)
+ExecuteInGameThread(function()
+    local viewport = H.GetGameViewportClient()
+    if not viewport or not viewport:IsValid() then return end
+    local world = viewport:GetWorld()
+    if not world or not world:IsValid() then return end
+    local gameplay = StaticFindObject(&quot;/Script/Engine.Default__GameplayStatics&quot;)
+    if not gameplay or not gameplay:IsValid() then return end
+    local pc = gameplay:GetPlayerController(world, 0)
+    if not pc or not pc:IsValid() then return end
+    local pawn = pc:K2_GetPawn()
+    print(&quot;[MyMod] World: &quot; .. world:GetFullName() .. &quot;\n&quot;)
+    print(&quot;[MyMod] Pawn ready: &quot; .. tostring(pawn and pawn:IsValid()) .. &quot;\n&quot;)
+end)</code></pre>
+<h2 id="not-ready">2. Treat not-ready as a state</h2>
+<p>A controller or pawn can be absent during loading, menu transition or travel. Return a clear not-ready result and retry through your normal lifecycle. Don’t manufacture a replacement pawn merely to satisfy a diagnostic query.</p><p>An object becoming valid does not prove every component is initialised. Resolve the specific weapon, camera or editor only when the feature needs it, then validate that link too.</p>
+<h2 id="travel-lifetime">3. Reset world-owned caches on travel</h2>
+<p>Capture a world identity with caches and jobs. When it changes, stop old actions and discard references to the previous world’s actors/widgets. Even if a new actor has a similar name, it is a new live instance.</p><p>Game-instance data may survive the map change, but its selected weapon template does not automatically mean a usable gun has spawned for the new pawn. The local missing-gun investigation needed separate selected-loadout and live-actor checks.</p>
+<h2 id="authority">4. Separate local convenience from authority</h2>
+<p>The local controller is appropriate for opening a local overlay. It is not sufficient authority to move every connected player or award a shared round score. Verify host/guest role and the required authoritative context before acting.</p><p>On clients, do not assume the host’s game mode is locally available. Use shared state and a validated request path rather than invoking a host-only operation on a nil object.</p>
+<h2 id="roster-camera">5. Inspect roster and camera separately</h2>
+<p>The local implementation reads GameState.PlayerArray and obtains names/pawns from player states. It resolves the player camera through GameplayStatics for view-dependent effects and labels. Neither list order nor camera identity should be used as a permanent player ID.</p><p>See <a href="hud-nameplates.html">HUDs and nameplates</a> for rendering and <a href="steam.html">Steam sessions</a> for connection identity. Test this chain again after repeated range travel, not only at the first bunker load.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> &middot; <a href="installation.html">Installing UE4SS</a> &middot; <a href="first-mod.html">Your first mod</a> &middot; <a href="lua-basics.html">Lua basics for modding</a> &middot; <a href="project-structure.html">Organising a mod</a> &middot; <a href="changelog.html">Changelog</a> &middot; <a href="hooks.html">Working with hooks</a> &middot; <a href="objects.html">Finding game objects</a> &middot; <a href="runtime.html">Timers &amp; cleanup</a> &middot; <a href="data-tables.html">Reading data tables</a> &middot; <a href="debugging.html">Debugging</a> &middot; <a href="performance.html">Performance &amp; profiling</a> &middot; <a href="settings-files.html">Settings &amp; local files</a> &middot; <a href="reflection.html">Reflection, classes &amp; instances</a> &middot; <a href="unreal-types.html">Names, text &amp; soft references</a> &middot; <a href="containers.html">Arrays, sets &amp; maps</a> &middot; <a href="transforms.html">Vectors, rotations &amp; spaces</a> &middot; <a href="player-world.html">Worlds, players &amp; controllers</a> &middot; <a href="object-dumps.html">Reading object dumps</a> &middot; <a href="workshop-inspector.html">Build a weapon inspector</a> &middot; <a href="testing.html">Test a mod step by step</a> &middot; <a href="target-inspector.html">Build a target inspector</a> &middot; <a href="range-lab.html">Plan a runtime range</a> &middot; <a href="weapons.html">Weapon assemblies</a> &middot; <a href="attachments.html">Attachments &amp; rails</a> &middot; <a href="weapon-stats.html">Weapon stats</a> &middot; <a href="ballistics.html">Shots &amp; ballistics</a> &middot; <a href="ammunition.html">Cartridges &amp; projectiles</a> &middot; <a href="reloads.html">Magazines &amp; reloading</a> &middot; <a href="aim-recoil.html">Aiming, cameras &amp; recoil</a> &middot; <a href="targets.html">Finding &amp; tracking targets</a> &middot; <a href="scoring.html">Hits &amp; scoring</a> &middot; <a href="ranges.html">Range menus &amp; travel</a> &middot; <a href="workshop-ui.html">Workshop UI</a> &middot; <a href="progression.html">Ownership &amp; unlocks</a> &middot; <a href="saves.html">Reading &amp; backing up saves</a> &middot; <a href="input-focus.html">Input, focus &amp; cursors</a> &middot; <a href="umg-layout.html">UMG panels &amp; layout</a> &middot; <a href="hud-nameplates.html">HUDs, markers &amp; nameplates</a> &middot; <a href="asset-loading.html">Asset paths &amp; loading</a> &middot; <a href="spawning.html">Spawning &amp; actor ownership</a> &middot; <a href="meshes-materials.html">Meshes, materials &amp; textures</a> &middot; <a href="lighting.html">Lighting &amp; exposure diagnosis</a> &middot; <a href="physics.html">Collision &amp; physics</a> &middot; <a href="audio.html">Weapon audio &amp; spatial sound</a> &middot; <a href="effects.html">Muzzle flashes, tracers &amp; impacts</a> &middot; <a href="multiplayer.html">Multiplayer architecture</a> &middot; <a href="steam.html">Steam sessions &amp; invites</a> &middot; <a href="network-protocol.html">Messages &amp; reliable events</a> &middot; <a href="interpolation.html">Movement interpolation</a> &middot; <a href="clock-sync.html">Clocks, latency &amp; round timing</a> &middot; <a href="chat.html">Chat, names &amp; text validation</a> &middot; <a href="paths.html">Game paths &amp; classes</a> &middot; <a href="custom-content.html">Custom content</a> &middot; <a href="packaging.html">Packaging a Lua mod</a> &middot; <a href="compatibility.html">Checking game updates</a> &middot; <a href="coverage.html">Coverage &amp; testing notes</a> &middot; <a href="tools.html">Tools &amp; resources</a> &middot; <a href="hook-reference.html">Game hook reference</a> &middot; <a href="glossary.html">Modding glossary</a> &middot; <a href="faq.html">Troubleshooting FAQ</a></p></noscript>
+</body>
+</html>

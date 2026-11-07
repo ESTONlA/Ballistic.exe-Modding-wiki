@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Build a target inspector | Ballistic Modding Wiki</title>
+  <meta name="description" content="Build a read-only target snapshot and use it to distinguish actor state from visible motion.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="target-inspector" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Build a target inspector</h1><p class="lead">Build a read-only target snapshot and use it to distinguish actor state from visible motion.</p>
+<h2 id="goal">What you will build</h2>
+<p>A small single-file mod that logs the current world, target count and a bounded sample of target actor names, hit flags, values and actor positions. It does not call Hit, reset targets, grant score or change saves. <a href="../assets/examples/recipes/TargetSnapshot.lua" download>Download the Lua source</a>.</p><p>This is teaching source adapted from the local discovery pattern. The documentation build checks the source/display relationship; that is not a fresh native-game compatibility test. Use a known range and record the build when checking it yourself.</p>
+<h2 id="setup">1. Create a separate mod folder</h2>
+<pre data-title="Installed layout" data-language="text"><code>ue4ss/Mods/TargetSnapshot/
+├── enabled.txt
+└── Scripts/
+    └── main.lua</code></pre><p>Copy the downloaded Lua file into Scripts as main.lua and create the empty enable marker beside Scripts. The default key is F10; change it if another mod uses that key. Close and restart the game after editing.</p>
+<h2 id="source">2. Read the complete source</h2>
+<pre data-example="recipes/TargetSnapshot.lua" data-title="Scripts/main.lua" data-language="lua"><code>local H = require(&quot;UEHelpers&quot;)
+local MaxTargets = 12
+local queued = false
+
+local function valid(object)
+    if object == nil then return false end
+    local ok, result = pcall(function() return object:IsValid() end)
+    return ok and result == true
+end
+
+local function unwrap(value)
+    if valid(value) then return value end
+    local ok, object = pcall(function() return value:get() end)
+    if ok and valid(object) then return object end
+end
+
+local function snapshot()
+    local viewport = H.GetGameViewportClient()
+    if not valid(viewport) then return {&quot;Viewport is not ready.&quot;} end
+    local world = viewport:GetWorld()
+    if not valid(world) then return {&quot;World is not ready.&quot;} end
+    local gameplay = StaticFindObject(&quot;/Script/Engine.Default__GameplayStatics&quot;)
+    local class = LoadAsset(&quot;/Game/BlueprintLogic/Targets/TargetBase.TargetBase_C&quot;)
+    if not valid(gameplay) or not valid(class) then return {&quot;Target discovery API/class unavailable.&quot;} end
+    local targets = {}
+    gameplay:GetAllActorsOfClass(world, class, targets)
+    local lines = {&quot;World: &quot; .. world:GetFullName(), &quot;Targets reported: &quot; .. #targets}
+    for i = 1, math.min(#targets, MaxTargets) do
+        local actor = unwrap(targets[i])
+        if actor then
+            local position = actor:K2_GetActorLocation()
+            lines[#lines + 1] = string.format(
+                &quot;%s | hit=%s | value=%s | actor=(%.1f, %.1f, %.1f)&quot;,
+                actor:GetFullName(), tostring(actor.HasBeenHit), tostring(actor.HitValue),
+                position.X, position.Y, position.Z)
+        end
+    end
+    if #targets &gt; MaxTargets then lines[#lines + 1] = &quot;Remaining target lines omitted by MaxTargets.&quot; end
+    if #targets == 0 then lines[#lines + 1] = &quot;No targets found in this world; try a known range.&quot; end
+    return lines
+end
+
+RegisterKeyBind(Key.F10, function()
+    if queued then return end
+    queued = true
+    ExecuteInGameThread(function()
+        local ok, lines = xpcall(snapshot, debug.traceback)
+        queued = false
+        if not ok then print(&quot;[TargetSnapshot] Failed: &quot; .. tostring(lines) .. &quot;\n&quot;); return end
+        for _, line in ipairs(lines) do print(&quot;[TargetSnapshot] &quot; .. line .. &quot;\n&quot;) end
+    end)
+end)
+
+print(&quot;[TargetSnapshot] Teaching example loaded; F10 captures read-only target state.\n&quot;)
+</code></pre><p>Read it in this order: validate native references, resolve the current viewport/world, load the target base class on the game thread, discover actors, copy a limited set of ordinary values, then print the completed result. The pending flag prevents overlapping queued snapshots and is released on Lua failure.</p><p>MaxTargets bounds printed detail, not the actual game target count. A truncation message is part of the result so a user does not mistake twelve printed entries for twelve targets in the range.</p>
+<h2 id="run">3. Capture a baseline</h2>
+<ul><li>Launch and find the TargetSnapshot startup prefix in the fresh log.</li><li>Enter a known working range through the normal game flow.</li><li>Focus the game and press the chosen key once.</li><li>Record the world name, total reported count and one target you can identify.</li><li>Keep the raw fields before firing at it.</li></ul><p>The output format is a diagnostic record, not a canonical complete target schema. Different subclasses can have additional fields and component behaviour.</p>
+<h2 id="compare">4. Compare after a normal hit</h2>
+<p>Use the normal game action to hit the target, then capture again. Compare HasBeenHit, HitValue and the actor transform. Do not manually reset anything between samples if the question is how the normal action changes state.</p><p>If the mesh visibly falls but the actor position barely changes, the next investigation is the body component’s transform. The source intentionally labels its coordinates actor= rather than pretending they describe every visible physics body.</p>
+<h2 id="extend">5. Extend one field or component at a time</h2>
+<p>Inspect the actual target’s components and identify its visible mesh before adding component-position logging. Copy the numeric vector immediately. Keep the selected component’s name/class in the result so another target type is not silently treated as identical.</p><p>For a periodic overlay, add the cadence and lifecycle policy from <a href="performance.html">Performance &amp; profiling</a> instead of turning a full actor rediscovery into an every-frame render loop.</p>
+<h2 id="cases">Expected failures and next actions</h2>
+<div class="table-scroll"><table><thead><tr><th>Result</th><th>Meaning / next check</th></tr></thead><tbody><tr><td>No targets</td><td>Confirm the actual current range/world, not just a selected card.</td></tr><tr><td>Unavailable class/API</td><td>Check loader and asset presence; do not call into a nil object.</td></tr><tr><td>Snapshot failed</td><td>Read the traceback and isolate that member/operation.</td></tr><tr><td>Many more targets than visible</td><td>Inspect subclasses and scope; don’t assume every discovered actor is the one in view.</td></tr><tr><td>Unchanged actor position after falling</td><td>Inspect the visible physics component.</td></tr><tr><td>Different identities after restart</td><td>Expected live-instance replacement; rebuild your registry.</td></tr></tbody></table></div>
+<h2 id="finish">Completion check</h2>
+<p>The useful result is a repeatable baseline/hit comparison with known target identities and a clear scope. It is not proof that all target reset rules, rewards or remote replication are now implemented. Continue with <a href="targets.html">Finding &amp; tracking targets</a> and <a href="scoring.html">Hits &amp; scoring</a>.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> &middot; <a href="installation.html">Installing UE4SS</a> &middot; <a href="first-mod.html">Your first mod</a> &middot; <a href="lua-basics.html">Lua basics for modding</a> &middot; <a href="project-structure.html">Organising a mod</a> &middot; <a href="changelog.html">Changelog</a> &middot; <a href="hooks.html">Working with hooks</a> &middot; <a href="objects.html">Finding game objects</a> &middot; <a href="runtime.html">Timers &amp; cleanup</a> &middot; <a href="data-tables.html">Reading data tables</a> &middot; <a href="debugging.html">Debugging</a> &middot; <a href="performance.html">Performance &amp; profiling</a> &middot; <a href="settings-files.html">Settings &amp; local files</a> &middot; <a href="reflection.html">Reflection, classes &amp; instances</a> &middot; <a href="unreal-types.html">Names, text &amp; soft references</a> &middot; <a href="containers.html">Arrays, sets &amp; maps</a> &middot; <a href="transforms.html">Vectors, rotations &amp; spaces</a> &middot; <a href="player-world.html">Worlds, players &amp; controllers</a> &middot; <a href="object-dumps.html">Reading object dumps</a> &middot; <a href="workshop-inspector.html">Build a weapon inspector</a> &middot; <a href="testing.html">Test a mod step by step</a> &middot; <a href="target-inspector.html">Build a target inspector</a> &middot; <a href="range-lab.html">Plan a runtime range</a> &middot; <a href="weapons.html">Weapon assemblies</a> &middot; <a href="attachments.html">Attachments &amp; rails</a> &middot; <a href="weapon-stats.html">Weapon stats</a> &middot; <a href="ballistics.html">Shots &amp; ballistics</a> &middot; <a href="ammunition.html">Cartridges &amp; projectiles</a> &middot; <a href="reloads.html">Magazines &amp; reloading</a> &middot; <a href="aim-recoil.html">Aiming, cameras &amp; recoil</a> &middot; <a href="targets.html">Finding &amp; tracking targets</a> &middot; <a href="scoring.html">Hits &amp; scoring</a> &middot; <a href="ranges.html">Range menus &amp; travel</a> &middot; <a href="workshop-ui.html">Workshop UI</a> &middot; <a href="progression.html">Ownership &amp; unlocks</a> &middot; <a href="saves.html">Reading &amp; backing up saves</a> &middot; <a href="input-focus.html">Input, focus &amp; cursors</a> &middot; <a href="umg-layout.html">UMG panels &amp; layout</a> &middot; <a href="hud-nameplates.html">HUDs, markers &amp; nameplates</a> &middot; <a href="asset-loading.html">Asset paths &amp; loading</a> &middot; <a href="spawning.html">Spawning &amp; actor ownership</a> &middot; <a href="meshes-materials.html">Meshes, materials &amp; textures</a> &middot; <a href="lighting.html">Lighting &amp; exposure diagnosis</a> &middot; <a href="physics.html">Collision &amp; physics</a> &middot; <a href="audio.html">Weapon audio &amp; spatial sound</a> &middot; <a href="effects.html">Muzzle flashes, tracers &amp; impacts</a> &middot; <a href="multiplayer.html">Multiplayer architecture</a> &middot; <a href="steam.html">Steam sessions &amp; invites</a> &middot; <a href="network-protocol.html">Messages &amp; reliable events</a> &middot; <a href="interpolation.html">Movement interpolation</a> &middot; <a href="clock-sync.html">Clocks, latency &amp; round timing</a> &middot; <a href="chat.html">Chat, names &amp; text validation</a> &middot; <a href="paths.html">Game paths &amp; classes</a> &middot; <a href="custom-content.html">Custom content</a> &middot; <a href="packaging.html">Packaging a Lua mod</a> &middot; <a href="compatibility.html">Checking game updates</a> &middot; <a href="coverage.html">Coverage &amp; testing notes</a> &middot; <a href="tools.html">Tools &amp; resources</a> &middot; <a href="hook-reference.html">Game hook reference</a> &middot; <a href="glossary.html">Modding glossary</a> &middot; <a href="faq.html">Troubleshooting FAQ</a></p></noscript>
+</body>
+</html>

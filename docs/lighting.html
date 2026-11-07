@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lighting &amp; exposure diagnosis | Ballistic Modding Wiki</title>
+  <meta name="description" content="Use controlled observations to separate invisible geometry from a dark rendering environment.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="lighting" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Lighting &amp; exposure diagnosis</h1><p class="lead">Use controlled observations to separate invisible geometry from a dark rendering environment.</p>
+<h2 id="baseline">1. Establish a visible reference</h2>
+<p>Enter the original working range and record a known object’s appearance, camera location and material. Then create one simple reference object in the runtime scene at a confirmed visible transform. This gives you something to compare besides an entire dark apartment block.</p><p>Keep world, material and object placement fixed while changing one lighting-related variable. A different scene location behind an indoor wall is not a fair exposure comparison.</p>
+<h2 id="visibility">2. Rule out placement and occlusion</h2>
+<p>Log player position, requested/actual object position and facing. Check whether a wall or enclosing pool geometry blocks the line of sight. Temporarily placing one diagnostic object closer can establish visibility without building a whole map.</p><p>A successful spawn log does not guarantee the object is in the view. Conversely, a visible dark silhouette proves some geometry rendered; it does not prove that view distance is the main problem.</p>
+<h2 id="materials">3. Compare material response</h2>
+<p>Try a known cooked material on one diagnostic object and inspect its response. An emissive diagnostic can distinguish a lighting/material issue from total absence, but it is not evidence that the intended lit material now works.</p><p>The local custom-range experiments produced dark silhouettes despite geometry appearing. Several light/exposure changes did not yield a finished acceptable scene. That is an unresolved rendering/layout result, not a completed outdoor-lighting recipe.</p>
+<h2 id="components">4. Verify the component you changed</h2>
+<p>A light actor existing does not prove the intended component was resolved and configured. Check the actual light/skylight component, mobility, world context and relevant property types. A call made against the wrong or unavailable component can leave the scene unchanged.</p><p>Likewise, confirm the postprocess volume or camera setting affecting the current view. Reading or setting a property elsewhere in the world does not establish that it contributes to this camera’s final image.</p>
+<h2 id="experiment">5. Keep an experiment log</h2>
+<pre data-title="A useful lighting experiment record" data-language="text"><code>World and camera:
+Reference object and material:
+Object requested / actual transform:
+Changed light or exposure component:
+Property and original / new value:
+Observed reference-object result:
+What stayed unchanged:
+Restoration result:</code></pre><p>Capture screenshots from comparable positions. When an experiment has no visible effect, record that fact and narrow the cause rather than repeatedly raising unrelated settings.</p>
+<h2 id="limit">When to stop calling it a lighting fix</h2>
+<p>A scene is not finished because an API call returned or one emissive panel became visible. Verify the desired layout, readable targets, player view, material response and return flow. For a true new map, the cooked-content pipeline is a separate requirement. See <a href="range-lab.html">Plan a runtime range</a>.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> &middot; <a href="installation.html">Installing UE4SS</a> &middot; <a href="first-mod.html">Your first mod</a> &middot; <a href="lua-basics.html">Lua basics for modding</a> &middot; <a href="project-structure.html">Organising a mod</a> &middot; <a href="changelog.html">Changelog</a> &middot; <a href="hooks.html">Working with hooks</a> &middot; <a href="objects.html">Finding game objects</a> &middot; <a href="runtime.html">Timers &amp; cleanup</a> &middot; <a href="data-tables.html">Reading data tables</a> &middot; <a href="debugging.html">Debugging</a> &middot; <a href="performance.html">Performance &amp; profiling</a> &middot; <a href="settings-files.html">Settings &amp; local files</a> &middot; <a href="reflection.html">Reflection, classes &amp; instances</a> &middot; <a href="unreal-types.html">Names, text &amp; soft references</a> &middot; <a href="containers.html">Arrays, sets &amp; maps</a> &middot; <a href="transforms.html">Vectors, rotations &amp; spaces</a> &middot; <a href="player-world.html">Worlds, players &amp; controllers</a> &middot; <a href="object-dumps.html">Reading object dumps</a> &middot; <a href="workshop-inspector.html">Build a weapon inspector</a> &middot; <a href="testing.html">Test a mod step by step</a> &middot; <a href="target-inspector.html">Build a target inspector</a> &middot; <a href="range-lab.html">Plan a runtime range</a> &middot; <a href="weapons.html">Weapon assemblies</a> &middot; <a href="attachments.html">Attachments &amp; rails</a> &middot; <a href="weapon-stats.html">Weapon stats</a> &middot; <a href="ballistics.html">Shots &amp; ballistics</a> &middot; <a href="ammunition.html">Cartridges &amp; projectiles</a> &middot; <a href="reloads.html">Magazines &amp; reloading</a> &middot; <a href="aim-recoil.html">Aiming, cameras &amp; recoil</a> &middot; <a href="targets.html">Finding &amp; tracking targets</a> &middot; <a href="scoring.html">Hits &amp; scoring</a> &middot; <a href="ranges.html">Range menus &amp; travel</a> &middot; <a href="workshop-ui.html">Workshop UI</a> &middot; <a href="progression.html">Ownership &amp; unlocks</a> &middot; <a href="saves.html">Reading &amp; backing up saves</a> &middot; <a href="input-focus.html">Input, focus &amp; cursors</a> &middot; <a href="umg-layout.html">UMG panels &amp; layout</a> &middot; <a href="hud-nameplates.html">HUDs, markers &amp; nameplates</a> &middot; <a href="asset-loading.html">Asset paths &amp; loading</a> &middot; <a href="spawning.html">Spawning &amp; actor ownership</a> &middot; <a href="meshes-materials.html">Meshes, materials &amp; textures</a> &middot; <a href="lighting.html">Lighting &amp; exposure diagnosis</a> &middot; <a href="physics.html">Collision &amp; physics</a> &middot; <a href="audio.html">Weapon audio &amp; spatial sound</a> &middot; <a href="effects.html">Muzzle flashes, tracers &amp; impacts</a> &middot; <a href="multiplayer.html">Multiplayer architecture</a> &middot; <a href="steam.html">Steam sessions &amp; invites</a> &middot; <a href="network-protocol.html">Messages &amp; reliable events</a> &middot; <a href="interpolation.html">Movement interpolation</a> &middot; <a href="clock-sync.html">Clocks, latency &amp; round timing</a> &middot; <a href="chat.html">Chat, names &amp; text validation</a> &middot; <a href="paths.html">Game paths &amp; classes</a> &middot; <a href="custom-content.html">Custom content</a> &middot; <a href="packaging.html">Packaging a Lua mod</a> &middot; <a href="compatibility.html">Checking game updates</a> &middot; <a href="coverage.html">Coverage &amp; testing notes</a> &middot; <a href="tools.html">Tools &amp; resources</a> &middot; <a href="hook-reference.html">Game hook reference</a> &middot; <a href="glossary.html">Modding glossary</a> &middot; <a href="faq.html">Troubleshooting FAQ</a></p></noscript>
+</body>
+</html>

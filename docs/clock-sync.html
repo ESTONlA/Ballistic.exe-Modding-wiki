@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clocks, latency &amp; round timing | Ballistic Modding Wiki</title>
+  <meta name="description" content="Keep event time, receipt time and render time on explicit clock bases.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="clock-sync" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Clocks, latency &amp; round timing</h1><p class="lead">Keep event time, receipt time and render time on explicit clock bases.</p>
+<h2 id="clocks">1. Name every time value</h2>
+<div class="table-scroll"><table><thead><tr><th>Value</th><th>Meaning</th></tr></thead><tbody><tr><td>Local event time</td><td>When the sender observed the action on its clock.</td></tr><tr><td>Receipt time</td><td>When this peer received it.</td></tr><tr><td>Host-aligned time</td><td>An estimated conversion into the authoritative round clock.</td></tr><tr><td>Render time</td><td>The earlier time sampled by an interpolation buffer.</td></tr><tr><td>Wall-clock file time</td><td>Useful for logs/backups, not automatically comparable to world seconds.</td></tr></tbody></table></div><p>Do not subtract os.time from GetRealTimeSeconds or compare two worlds’ elapsed seconds without a conversion. A world clock can restart during travel while a process/network session continues.</p>
+<h2 id="exchange">2. Exchange timestamp echoes</h2>
+<p>The local clock code sends a timestamp, echoes a remote one and records how long the echo was held. It uses bounded recent requests to estimate round trip and offset. This is a mod-level time estimate, not a Steam guarantee.</p><pre data-title="Illustrative calculation; inputs need validated matching echoes" data-language="lua"><code>local rtt = receivedNow - originallySentAt - heldByPeer
+if rtt &lt; 0 then return nil end
+local estimatedOffset = remoteStamp + rtt / 2 - receivedNow</code></pre><p>The half-round-trip assumption does not reveal actual one-way delay on an asymmetric connection. Reject impossible or stale echoes and keep the uncertainty in mind when using the estimate for gameplay decisions.</p>
+<h2 id="quality">3. Track estimate quality</h2>
+<p>Require enough recent accepted samples before treating a conversion as usable. Record age, round-trip estimate and rejected samples. A single fortunate packet is not a stable clock synchronisation result.</p><p>Do not let arbitrary remote timestamps create unbounded offsets. Validate sample ranges and define how the estimate resets or ages out after a pause, reconnect or world transition.</p>
+<h2 id="deadline">4. Define the scoring deadline policy</h2>
+<p>Choose whether eligibility is based on host receipt time, a validated host-aligned event time or another explicit rule. Host receipt time is simple but disadvantages delayed guest hits near the deadline. A grace period needs bounded timestamps and a settling phase, not an open invitation to submit late scores.</p><p>Preserve round ID and shot identity with the event. A correctly converted timestamp still belongs to the wrong round if its generation is stale.</p>
+<h2 id="rendering">5. Keep presentation smoothing separate</h2>
+<p>The interpolation buffer’s render delay should not silently become extra competitive time. The displayed remote player can be intentionally behind the authoritative event stream. Explain countdown/results using the shared accepted state, not the last rendered pose timestamp.</p><p>A countdown shown locally before both peers are synchronised is a presentation error even if the host’s internal timer is correct. Tie readiness to the state your challenge actually requires.</p>
+<h2 id="tests">Timing acceptance cases</h2>
+<ul><li>A valid timestamp echo updates the estimate.</li><li>A stale/malformed/negative sample is rejected.</li><li>Travel and reconnect reset the correct histories.</li><li>A guest hit near the deadline follows the documented rule.</li><li>A settling window closes and cannot reopen from an old packet.</li><li>The result is checked on real peers, not inferred from a local simulation.</li></ul>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> &middot; <a href="installation.html">Installing UE4SS</a> &middot; <a href="first-mod.html">Your first mod</a> &middot; <a href="lua-basics.html">Lua basics for modding</a> &middot; <a href="project-structure.html">Organising a mod</a> &middot; <a href="changelog.html">Changelog</a> &middot; <a href="hooks.html">Working with hooks</a> &middot; <a href="objects.html">Finding game objects</a> &middot; <a href="runtime.html">Timers &amp; cleanup</a> &middot; <a href="data-tables.html">Reading data tables</a> &middot; <a href="debugging.html">Debugging</a> &middot; <a href="performance.html">Performance &amp; profiling</a> &middot; <a href="settings-files.html">Settings &amp; local files</a> &middot; <a href="reflection.html">Reflection, classes &amp; instances</a> &middot; <a href="unreal-types.html">Names, text &amp; soft references</a> &middot; <a href="containers.html">Arrays, sets &amp; maps</a> &middot; <a href="transforms.html">Vectors, rotations &amp; spaces</a> &middot; <a href="player-world.html">Worlds, players &amp; controllers</a> &middot; <a href="object-dumps.html">Reading object dumps</a> &middot; <a href="workshop-inspector.html">Build a weapon inspector</a> &middot; <a href="testing.html">Test a mod step by step</a> &middot; <a href="target-inspector.html">Build a target inspector</a> &middot; <a href="range-lab.html">Plan a runtime range</a> &middot; <a href="weapons.html">Weapon assemblies</a> &middot; <a href="attachments.html">Attachments &amp; rails</a> &middot; <a href="weapon-stats.html">Weapon stats</a> &middot; <a href="ballistics.html">Shots &amp; ballistics</a> &middot; <a href="ammunition.html">Cartridges &amp; projectiles</a> &middot; <a href="reloads.html">Magazines &amp; reloading</a> &middot; <a href="aim-recoil.html">Aiming, cameras &amp; recoil</a> &middot; <a href="targets.html">Finding &amp; tracking targets</a> &middot; <a href="scoring.html">Hits &amp; scoring</a> &middot; <a href="ranges.html">Range menus &amp; travel</a> &middot; <a href="workshop-ui.html">Workshop UI</a> &middot; <a href="progression.html">Ownership &amp; unlocks</a> &middot; <a href="saves.html">Reading &amp; backing up saves</a> &middot; <a href="input-focus.html">Input, focus &amp; cursors</a> &middot; <a href="umg-layout.html">UMG panels &amp; layout</a> &middot; <a href="hud-nameplates.html">HUDs, markers &amp; nameplates</a> &middot; <a href="asset-loading.html">Asset paths &amp; loading</a> &middot; <a href="spawning.html">Spawning &amp; actor ownership</a> &middot; <a href="meshes-materials.html">Meshes, materials &amp; textures</a> &middot; <a href="lighting.html">Lighting &amp; exposure diagnosis</a> &middot; <a href="physics.html">Collision &amp; physics</a> &middot; <a href="audio.html">Weapon audio &amp; spatial sound</a> &middot; <a href="effects.html">Muzzle flashes, tracers &amp; impacts</a> &middot; <a href="multiplayer.html">Multiplayer architecture</a> &middot; <a href="steam.html">Steam sessions &amp; invites</a> &middot; <a href="network-protocol.html">Messages &amp; reliable events</a> &middot; <a href="interpolation.html">Movement interpolation</a> &middot; <a href="clock-sync.html">Clocks, latency &amp; round timing</a> &middot; <a href="chat.html">Chat, names &amp; text validation</a> &middot; <a href="paths.html">Game paths &amp; classes</a> &middot; <a href="custom-content.html">Custom content</a> &middot; <a href="packaging.html">Packaging a Lua mod</a> &middot; <a href="compatibility.html">Checking game updates</a> &middot; <a href="coverage.html">Coverage &amp; testing notes</a> &middot; <a href="tools.html">Tools &amp; resources</a> &middot; <a href="hook-reference.html">Game hook reference</a> &middot; <a href="glossary.html">Modding glossary</a> &middot; <a href="faq.html">Troubleshooting FAQ</a></p></noscript>
+</body>
+</html>

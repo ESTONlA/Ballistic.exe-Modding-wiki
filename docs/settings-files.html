@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Settings &amp; local files | Ballistic Modding Wiki</title>
+  <meta name="description" content="Validate preferences, bound local reads and avoid confusing mod data with game saves.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="settings-files" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Settings &amp; local files</h1><p class="lead">Validate preferences, bound local reads and avoid confusing mod data with game saves.</p>
+<h2 id="separate-data">1. Separate the data you own</h2>
+<p>Keep user configuration, mod preferences, temporary diagnostics and the game’s actual save slot as distinct categories. A UI preference file should not become a back door for loading arbitrary Lua or replacing progression. Name the data directory and ownership in your mod’s instructions.</p><p>The local examples derive a mod-owned path from their script location rather than guessing the process working directory. Working directories can differ between launcher, shipping executable and test tools.</p>
+<h2 id="typed-defaults">2. Parse into typed defaults</h2>
+<pre data-title="Context: rawValue is a string from a bounded preference read" data-language="lua"><code>local function parseBoolean(value)
+    if value == &quot;1&quot; then return true end
+    if value == &quot;0&quot; then return false end
+    return nil
+end
+
+local enabled = parseBoolean(rawValue)
+if enabled == nil then enabled = true end</code></pre><p>Check nil explicitly so a valid false value is not replaced by the default. Validate numeric settings for type, integer/range requirements and finite values. Unknown keys can be ignored with a diagnostic rather than becoming new executable behaviour.</p>
+<h2 id="bounded-read">3. Read a bounded amount</h2>
+<pre data-title="Context: path is a fixed mod-owned filename, not peer-controlled input" data-language="lua"><code>local function readSmallFile(path, limit)
+    local file = io.open(path, &quot;rb&quot;)
+    if not file then return nil, &quot;missing&quot; end
+    local bytes = file:read(limit + 1)
+    file:close()
+    if not bytes then return &quot;&quot; end
+    if #bytes &gt; limit then return nil, &quot;too large&quot; end
+    return bytes
+end</code></pre><p>A missing preference file can mean first-run defaults. A file exceeding its size limit is a different result. Close handles before returning and keep read errors visible enough to diagnose a repeated failure.</p>
+<h2 id="write-policy">4. Pick a deliberate write policy</h2>
+<p>Do not rewrite preferences on every render tick. Save when the user changes a setting, preferably after serialising validated plain values. Use a temporary file and an appropriate replacement/backup strategy for the platform. Removing the old file and then renaming is not a universal atomic replacement guarantee.</p><p>Treat a write/rename failure as a failure. Do not update your “saved” status before the operation succeeds. Keep the previous usable file when recovery matters; a log message cannot recover bytes already deleted.</p>
+<h2 id="paths">5. Keep filenames constrained</h2>
+<p>A fixed filename or narrow allowlist is easier to reason about than accepting an arbitrary path from UI or a network peer. Reject path separators and traversal where the feature only expects a preference basename. Never accept remote Lua source and evaluate it as a configuration update.</p><p>For a genuine save-transfer feature, use the separate consent, slot restriction, backup and reload workflow in <a href="saves.html">Reading &amp; backing up saves</a>. A chat or settings handler should not share that file authority.</p>
+<h2 id="tests">Test the edge cases</h2>
+<ul><li>No file: defaults load and a useful first-run state appears.</li><li>Invalid boolean or number: the documented default/rejection occurs.</li><li>Unknown key: no new action is executed.</li><li>Oversized file: the read is rejected without allocating an unbounded buffer.</li><li>Write failure: the UI reports it and does not pretend the preference persisted.</li><li>Reset defaults: intended settings reset while unrelated user data stays intact.</li></ul>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> &middot; <a href="installation.html">Installing UE4SS</a> &middot; <a href="first-mod.html">Your first mod</a> &middot; <a href="lua-basics.html">Lua basics for modding</a> &middot; <a href="project-structure.html">Organising a mod</a> &middot; <a href="changelog.html">Changelog</a> &middot; <a href="hooks.html">Working with hooks</a> &middot; <a href="objects.html">Finding game objects</a> &middot; <a href="runtime.html">Timers &amp; cleanup</a> &middot; <a href="data-tables.html">Reading data tables</a> &middot; <a href="debugging.html">Debugging</a> &middot; <a href="performance.html">Performance &amp; profiling</a> &middot; <a href="settings-files.html">Settings &amp; local files</a> &middot; <a href="reflection.html">Reflection, classes &amp; instances</a> &middot; <a href="unreal-types.html">Names, text &amp; soft references</a> &middot; <a href="containers.html">Arrays, sets &amp; maps</a> &middot; <a href="transforms.html">Vectors, rotations &amp; spaces</a> &middot; <a href="player-world.html">Worlds, players &amp; controllers</a> &middot; <a href="object-dumps.html">Reading object dumps</a> &middot; <a href="workshop-inspector.html">Build a weapon inspector</a> &middot; <a href="testing.html">Test a mod step by step</a> &middot; <a href="target-inspector.html">Build a target inspector</a> &middot; <a href="range-lab.html">Plan a runtime range</a> &middot; <a href="weapons.html">Weapon assemblies</a> &middot; <a href="attachments.html">Attachments &amp; rails</a> &middot; <a href="weapon-stats.html">Weapon stats</a> &middot; <a href="ballistics.html">Shots &amp; ballistics</a> &middot; <a href="ammunition.html">Cartridges &amp; projectiles</a> &middot; <a href="reloads.html">Magazines &amp; reloading</a> &middot; <a href="aim-recoil.html">Aiming, cameras &amp; recoil</a> &middot; <a href="targets.html">Finding &amp; tracking targets</a> &middot; <a href="scoring.html">Hits &amp; scoring</a> &middot; <a href="ranges.html">Range menus &amp; travel</a> &middot; <a href="workshop-ui.html">Workshop UI</a> &middot; <a href="progression.html">Ownership &amp; unlocks</a> &middot; <a href="saves.html">Reading &amp; backing up saves</a> &middot; <a href="input-focus.html">Input, focus &amp; cursors</a> &middot; <a href="umg-layout.html">UMG panels &amp; layout</a> &middot; <a href="hud-nameplates.html">HUDs, markers &amp; nameplates</a> &middot; <a href="asset-loading.html">Asset paths &amp; loading</a> &middot; <a href="spawning.html">Spawning &amp; actor ownership</a> &middot; <a href="meshes-materials.html">Meshes, materials &amp; textures</a> &middot; <a href="lighting.html">Lighting &amp; exposure diagnosis</a> &middot; <a href="physics.html">Collision &amp; physics</a> &middot; <a href="audio.html">Weapon audio &amp; spatial sound</a> &middot; <a href="effects.html">Muzzle flashes, tracers &amp; impacts</a> &middot; <a href="multiplayer.html">Multiplayer architecture</a> &middot; <a href="steam.html">Steam sessions &amp; invites</a> &middot; <a href="network-protocol.html">Messages &amp; reliable events</a> &middot; <a href="interpolation.html">Movement interpolation</a> &middot; <a href="clock-sync.html">Clocks, latency &amp; round timing</a> &middot; <a href="chat.html">Chat, names &amp; text validation</a> &middot; <a href="paths.html">Game paths &amp; classes</a> &middot; <a href="custom-content.html">Custom content</a> &middot; <a href="packaging.html">Packaging a Lua mod</a> &middot; <a href="compatibility.html">Checking game updates</a> &middot; <a href="coverage.html">Coverage &amp; testing notes</a> &middot; <a href="tools.html">Tools &amp; resources</a> &middot; <a href="hook-reference.html">Game hook reference</a> &middot; <a href="glossary.html">Modding glossary</a> &middot; <a href="faq.html">Troubleshooting FAQ</a></p></noscript>
+</body>
+</html>

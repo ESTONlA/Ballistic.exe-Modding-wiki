@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Muzzle flashes, tracers &amp; impacts | Ballistic Modding Wiki</title>
+  <meta name="description" content="Build bounded cosmetic effects without confusing them with the actual ballistic simulation.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="effects" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Muzzle flashes, tracers &amp; impacts</h1><p class="lead">Build bounded cosmetic effects without confusing them with the actual ballistic simulation.</p>
+<h2 id="event-map">1. Map an effect to a specific event</h2>
+<p>A muzzle flash belongs to a shot creation event. An impact belongs to an actual impact location. A straight cosmetic tracer may start with a camera/muzzle approximation and be corrected when the impact arrives. None of those establishes the full simulated bullet trajectory.</p><div class="table-scroll"><table><thead><tr><th>Effect</th><th>Source data</th></tr></thead><tbody><tr><td>Muzzle flash</td><td>Shot ID, source position and direction.</td></tr><tr><td>Tracer</td><td>Source and selected endpoint, plus a short lifetime.</td></tr><tr><td>Impact</td><td>Actual impact location and a verified material/effect policy.</td></tr><tr><td>Handling cue</td><td>The relevant aiming/reload/weapon state event.</td></tr></tbody></table></div>
+<h2 id="assets">2. Use known cooked systems first</h2>
+<p>The local implementation requested /Game/VFX/MuzzleFlash/MuzzleFlash.MuzzleFlash and /Game/VFX/Impacts/Impact_Concrete.Impact_Concrete through the Niagara function library. The concrete effect was a chosen cosmetic fallback, not universal material detection.</p><p>Verify that the asset is available in the current build and check a single visible effect before adding network playback. A successful load alone does not prove the effect appears in the intended view or has an acceptable lifetime.</p>
+<h2 id="lifetime">3. Track each owned component or actor</h2>
+<p>Store what you spawned, whether cleanup requires actor destruction or component destruction, and its expiry time in the current world’s clock. Use a cap on live cosmetic objects. A missed impact packet must not leave a permanent beam in the range.</p><pre data-title="Lifecycle record fragment; component and clock are already established" data-language="lua"><code>local effect = {object = component, expiresAt = now + 0.5,
+    worldId = currentWorldId}
+-- Store this in your feature-owned registry.
+-- Recheck identity/validity and destroy through the correct API at expiry.</code></pre>
+<h2 id="beam">4. Calibrate a simple beam carefully</h2>
+<p>A local visual tracer used a thin cooked cube mesh aligned between two points, with an emissive material and collision disabled. Its length-to-scale conversion assumed that specific mesh’s dimensions. Don’t reuse the same divisor for an unrelated model without checking bounds.</p><p>Validate finite endpoints, a non-zero length and a maximum reasonable distance. Keep visual-only collision and replication settings explicit so the tracer does not block shots or become another authoritative gameplay actor.</p>
+<h2 id="correction">5. Correct and deduplicate</h2>
+<p>Keep a shot-to-effect mapping. When the actual impact arrives, replace or adjust the corresponding temporary beam rather than spawning several unrelated permanent lines. Retire the mapping after a bounded period so it cannot grow forever.</p><p>Deduplicate a resent shot/impact event before playing another effect. Cosmetic retries and gameplay score retries need consistent IDs, but effect display does not itself award points.</p>
+<h2 id="verification">Verify motion and teardown</h2>
+<p>Test a close shot, a distant shot, a missed impact, rapid fire up to the object cap, repeated packets and travel during an effect. Check that every actor/component your feature owns is eventually retired. Then verify on both real peers; a local effect fixture alone does not demonstrate delivery or timing over Steam.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> &middot; <a href="installation.html">Installing UE4SS</a> &middot; <a href="first-mod.html">Your first mod</a> &middot; <a href="lua-basics.html">Lua basics for modding</a> &middot; <a href="project-structure.html">Organising a mod</a> &middot; <a href="changelog.html">Changelog</a> &middot; <a href="hooks.html">Working with hooks</a> &middot; <a href="objects.html">Finding game objects</a> &middot; <a href="runtime.html">Timers &amp; cleanup</a> &middot; <a href="data-tables.html">Reading data tables</a> &middot; <a href="debugging.html">Debugging</a> &middot; <a href="performance.html">Performance &amp; profiling</a> &middot; <a href="settings-files.html">Settings &amp; local files</a> &middot; <a href="reflection.html">Reflection, classes &amp; instances</a> &middot; <a href="unreal-types.html">Names, text &amp; soft references</a> &middot; <a href="containers.html">Arrays, sets &amp; maps</a> &middot; <a href="transforms.html">Vectors, rotations &amp; spaces</a> &middot; <a href="player-world.html">Worlds, players &amp; controllers</a> &middot; <a href="object-dumps.html">Reading object dumps</a> &middot; <a href="workshop-inspector.html">Build a weapon inspector</a> &middot; <a href="testing.html">Test a mod step by step</a> &middot; <a href="target-inspector.html">Build a target inspector</a> &middot; <a href="range-lab.html">Plan a runtime range</a> &middot; <a href="weapons.html">Weapon assemblies</a> &middot; <a href="attachments.html">Attachments &amp; rails</a> &middot; <a href="weapon-stats.html">Weapon stats</a> &middot; <a href="ballistics.html">Shots &amp; ballistics</a> &middot; <a href="ammunition.html">Cartridges &amp; projectiles</a> &middot; <a href="reloads.html">Magazines &amp; reloading</a> &middot; <a href="aim-recoil.html">Aiming, cameras &amp; recoil</a> &middot; <a href="targets.html">Finding &amp; tracking targets</a> &middot; <a href="scoring.html">Hits &amp; scoring</a> &middot; <a href="ranges.html">Range menus &amp; travel</a> &middot; <a href="workshop-ui.html">Workshop UI</a> &middot; <a href="progression.html">Ownership &amp; unlocks</a> &middot; <a href="saves.html">Reading &amp; backing up saves</a> &middot; <a href="input-focus.html">Input, focus &amp; cursors</a> &middot; <a href="umg-layout.html">UMG panels &amp; layout</a> &middot; <a href="hud-nameplates.html">HUDs, markers &amp; nameplates</a> &middot; <a href="asset-loading.html">Asset paths &amp; loading</a> &middot; <a href="spawning.html">Spawning &amp; actor ownership</a> &middot; <a href="meshes-materials.html">Meshes, materials &amp; textures</a> &middot; <a href="lighting.html">Lighting &amp; exposure diagnosis</a> &middot; <a href="physics.html">Collision &amp; physics</a> &middot; <a href="audio.html">Weapon audio &amp; spatial sound</a> &middot; <a href="effects.html">Muzzle flashes, tracers &amp; impacts</a> &middot; <a href="multiplayer.html">Multiplayer architecture</a> &middot; <a href="steam.html">Steam sessions &amp; invites</a> &middot; <a href="network-protocol.html">Messages &amp; reliable events</a> &middot; <a href="interpolation.html">Movement interpolation</a> &middot; <a href="clock-sync.html">Clocks, latency &amp; round timing</a> &middot; <a href="chat.html">Chat, names &amp; text validation</a> &middot; <a href="paths.html">Game paths &amp; classes</a> &middot; <a href="custom-content.html">Custom content</a> &middot; <a href="packaging.html">Packaging a Lua mod</a> &middot; <a href="compatibility.html">Checking game updates</a> &middot; <a href="coverage.html">Coverage &amp; testing notes</a> &middot; <a href="tools.html">Tools &amp; resources</a> &middot; <a href="hook-reference.html">Game hook reference</a> &middot; <a href="glossary.html">Modding glossary</a> &middot; <a href="faq.html">Troubleshooting FAQ</a></p></noscript>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Spawning &amp; actor ownership | Ballistic Modding Wiki</title>
+  <meta name="description" content="Create disposable actors deliberately and clean up only what your feature owns.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="spawning" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Spawning &amp; actor ownership</h1><p class="lead">Create disposable actors deliberately and clean up only what your feature owns.</p>
+<h2 id="plan">1. Define what the actor represents</h2>
+<p>Decide whether the new object is a cosmetic proxy, an interactive target, a physics prop or scenery. Those choices affect collision, replication, ownership and cleanup. A mesh actor with collision disabled can be useful for a tracer but is not a playable target.</p><p>Start with one object. Record its intended world, class, transform and lifetime before spawning many copies. A successful SpawnActor result does not establish that the mesh, material and behaviour are all configured.</p>
+<h2 id="spawn">2. Acquire the current world and class</h2>
+<pre data-title="Mutating fragment: owned is your mod’s Lua list, not a global actor list" data-language="lua"><code>-- Context: current world and position were validated on the game thread.
+local class = StaticFindObject(&quot;/Script/Engine.StaticMeshActor&quot;)
+if not class or not class:IsValid() then return end
+local actor = world:SpawnActor(class, position,
+    {Pitch = 0, Yaw = 0, Roll = 0})
+if not actor or not actor:IsValid() then return end
+
+owned[#owned + 1] = actor
+-- Configure only after the actor has been tracked for cleanup.</code></pre><p>Keep the owning list reachable for the feature’s lifetime. Track the object immediately so a later Lua error while assigning a mesh does not leave an untracked actor behind. The surrounding action should clean up partial construction before reporting failure.</p>
+<h2 id="configure">3. Configure one property group at a time</h2>
+<p>For scenery or a visual proxy, inspect mobility, component mesh assignment, scale, material, collision and replication deliberately. Some assignments require a movable component or a particular actor class. Confirm the actual result instead of assuming every setter succeeded.</p><p>Use a verified component reference such as the static-mesh actor’s StaticMeshComponent in the tested build. Do not invent an unreflected getter because the C++ engine has a similarly named method.</p>
+<h2 id="ownership">4. Keep engine ownership distinct from your bookkeeping</h2>
+<p>The engine actor’s owner/outer/attachment relationships and your Lua owned list serve different purposes. Your list says which objects the feature is responsible for cleaning up. It does not itself attach a component, assign network authority or make a pointer safe after travel.</p><p>When building an assembly, keep the parent/child relationship explicit and test what destroying a parent does to descendants. Don’t attempt to destroy every descendant twice through stale references.</p>
+<h2 id="cleanup">5. Clean up on close, replacement and travel</h2>
+<p>Remove replaced proxies before losing their handles. On feature close, destroy the valid actors you created in that world. On world change, retire the old registry; don’t reach into a new world and perform a broad class-based deletion to simulate cleanup.</p><p>If you modify an existing game actor instead of spawning one, save the specific original state you intend to restore. Destroying that actor is not an appropriate general teardown for a borrowed object.</p>
+<h2 id="acceptance">Acceptance checks</h2>
+<ul><li>One actor appears at the intended transform.</li><li>A configuration failure removes the partially created actor.</li><li>Repeating setup does not duplicate the object.</li><li>Replacing a mesh/proxy does not leak the previous actor.</li><li>Closing and travelling retire the correct objects.</li><li>No unrelated game actor is deleted.</li></ul><p>The local effects/proxy code used owned lists and per-world cleanup. This documents that pattern, not a guarantee every arbitrary spawned class supports the same setup sequence.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> &middot; <a href="installation.html">Installing UE4SS</a> &middot; <a href="first-mod.html">Your first mod</a> &middot; <a href="lua-basics.html">Lua basics for modding</a> &middot; <a href="project-structure.html">Organising a mod</a> &middot; <a href="changelog.html">Changelog</a> &middot; <a href="hooks.html">Working with hooks</a> &middot; <a href="objects.html">Finding game objects</a> &middot; <a href="runtime.html">Timers &amp; cleanup</a> &middot; <a href="data-tables.html">Reading data tables</a> &middot; <a href="debugging.html">Debugging</a> &middot; <a href="performance.html">Performance &amp; profiling</a> &middot; <a href="settings-files.html">Settings &amp; local files</a> &middot; <a href="reflection.html">Reflection, classes &amp; instances</a> &middot; <a href="unreal-types.html">Names, text &amp; soft references</a> &middot; <a href="containers.html">Arrays, sets &amp; maps</a> &middot; <a href="transforms.html">Vectors, rotations &amp; spaces</a> &middot; <a href="player-world.html">Worlds, players &amp; controllers</a> &middot; <a href="object-dumps.html">Reading object dumps</a> &middot; <a href="workshop-inspector.html">Build a weapon inspector</a> &middot; <a href="testing.html">Test a mod step by step</a> &middot; <a href="target-inspector.html">Build a target inspector</a> &middot; <a href="range-lab.html">Plan a runtime range</a> &middot; <a href="weapons.html">Weapon assemblies</a> &middot; <a href="attachments.html">Attachments &amp; rails</a> &middot; <a href="weapon-stats.html">Weapon stats</a> &middot; <a href="ballistics.html">Shots &amp; ballistics</a> &middot; <a href="ammunition.html">Cartridges &amp; projectiles</a> &middot; <a href="reloads.html">Magazines &amp; reloading</a> &middot; <a href="aim-recoil.html">Aiming, cameras &amp; recoil</a> &middot; <a href="targets.html">Finding &amp; tracking targets</a> &middot; <a href="scoring.html">Hits &amp; scoring</a> &middot; <a href="ranges.html">Range menus &amp; travel</a> &middot; <a href="workshop-ui.html">Workshop UI</a> &middot; <a href="progression.html">Ownership &amp; unlocks</a> &middot; <a href="saves.html">Reading &amp; backing up saves</a> &middot; <a href="input-focus.html">Input, focus &amp; cursors</a> &middot; <a href="umg-layout.html">UMG panels &amp; layout</a> &middot; <a href="hud-nameplates.html">HUDs, markers &amp; nameplates</a> &middot; <a href="asset-loading.html">Asset paths &amp; loading</a> &middot; <a href="spawning.html">Spawning &amp; actor ownership</a> &middot; <a href="meshes-materials.html">Meshes, materials &amp; textures</a> &middot; <a href="lighting.html">Lighting &amp; exposure diagnosis</a> &middot; <a href="physics.html">Collision &amp; physics</a> &middot; <a href="audio.html">Weapon audio &amp; spatial sound</a> &middot; <a href="effects.html">Muzzle flashes, tracers &amp; impacts</a> &middot; <a href="multiplayer.html">Multiplayer architecture</a> &middot; <a href="steam.html">Steam sessions &amp; invites</a> &middot; <a href="network-protocol.html">Messages &amp; reliable events</a> &middot; <a href="interpolation.html">Movement interpolation</a> &middot; <a href="clock-sync.html">Clocks, latency &amp; round timing</a> &middot; <a href="chat.html">Chat, names &amp; text validation</a> &middot; <a href="paths.html">Game paths &amp; classes</a> &middot; <a href="custom-content.html">Custom content</a> &middot; <a href="packaging.html">Packaging a Lua mod</a> &middot; <a href="compatibility.html">Checking game updates</a> &middot; <a href="coverage.html">Coverage &amp; testing notes</a> &middot; <a href="tools.html">Tools &amp; resources</a> &middot; <a href="hook-reference.html">Game hook reference</a> &middot; <a href="glossary.html">Modding glossary</a> &middot; <a href="faq.html">Troubleshooting FAQ</a></p></noscript>
+</body>
+</html>

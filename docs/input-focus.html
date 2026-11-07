@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Input, focus &amp; cursors | Ballistic Modding Wiki</title>
+  <meta name="description" content="Make keybinds and menus coexist with game input, cursor state and real button interaction.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="input-focus" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Input, focus &amp; cursors</h1><p class="lead">Make keybinds and menus coexist with game input, cursor state and real button interaction.</p>
+<h2 id="focus">1. Confirm which window has focus</h2>
+<p>UE4SS keybind callbacks in the referenced API require the game or debug console to have focus. A missing response while typing in an external editor does not prove registration failed. Begin with a log-only callback and a unique startup prefix.</p><p>Choose a key that does not conflict with another mod or a critical game action. In the teaching examples, F9 or F10 are defaults to change deliberately, not reserved keys guaranteed to be free.</p>
+<h2 id="one-registration">2. Register once and debounce the action you own</h2>
+<pre data-title="Action-queue pattern; replace other F9 registrations when testing" data-language="lua"><code>local queued = false
+RegisterKeyBind(Key.F9, function()
+    if queued then return end
+    queued = true
+    ExecuteInGameThread(function()
+        local ok, err = pcall(function()
+            -- Your bounded action, with fresh object checks.
+        end)
+        queued = false
+        if not ok then print(&quot;[MyMod] &quot; .. tostring(err) .. &quot;\n&quot;) end
+    end)
+end)</code></pre><p>This prevents overlapping queued operations, not every possible input-repeat pattern. If you need one action per press or a minimum interval, define and test that rule without hiding legitimate second presses indefinitely.</p>
+<h2 id="menu-state">3. Capture input state before opening your menu</h2>
+<p>The local panel code remembered the prior mouse-cursor state and used the widget library’s game/UI input modes. On close it restored an appropriate previous mode instead of assuming the cursor should always be hidden.</p><p>Do not claim a generic setter name works on every loader/build. Verify the reflected widget/input API you are calling and the owning controller. Menu construction and input ownership need the current world’s context.</p>
+<h2 id="text-entry">4. Keep text entry from firing game actions</h2>
+<p>When chat or an edit box is active, decide which shortcuts still apply. Sending a message must not also clear attachments or trigger a range action. A global key callback may need your feature’s focus/open-state guard.</p><p>Test Enter, Escape, click-outside behaviour and reopening. If an operation closes the menu, restore input state on success and on cancellation/error paths.</p>
+<h2 id="button-path">5. Distinguish hover polling from native activation</h2>
+<p>A mouse-hover plus left-button keybind can implement a particular clickable action, as one local workbench control did. It does not automatically provide keyboard/controller activation, focus traversal or accessibility. Copying native styling is not equivalent to binding the native action route.</p><p>Use <a href="umg-layout.html">UMG layout</a> to verify hit areas and parent visibility. A button can exist and still be behind another panel or outside the visible bounds.</p>
+<h2 id="tests">Input acceptance checklist</h2>
+<ul><li>Key works once when the intended window is focused.</li><li>Typing in a field does not trigger an unrelated action.</li><li>The visible hit area matches where the button responds.</li><li>Escape/close restores the documented input and cursor state.</li><li>Reopening does not duplicate callbacks.</li><li>Unsupported input methods are stated rather than assumed.</li></ul>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> &middot; <a href="installation.html">Installing UE4SS</a> &middot; <a href="first-mod.html">Your first mod</a> &middot; <a href="lua-basics.html">Lua basics for modding</a> &middot; <a href="project-structure.html">Organising a mod</a> &middot; <a href="changelog.html">Changelog</a> &middot; <a href="hooks.html">Working with hooks</a> &middot; <a href="objects.html">Finding game objects</a> &middot; <a href="runtime.html">Timers &amp; cleanup</a> &middot; <a href="data-tables.html">Reading data tables</a> &middot; <a href="debugging.html">Debugging</a> &middot; <a href="performance.html">Performance &amp; profiling</a> &middot; <a href="settings-files.html">Settings &amp; local files</a> &middot; <a href="reflection.html">Reflection, classes &amp; instances</a> &middot; <a href="unreal-types.html">Names, text &amp; soft references</a> &middot; <a href="containers.html">Arrays, sets &amp; maps</a> &middot; <a href="transforms.html">Vectors, rotations &amp; spaces</a> &middot; <a href="player-world.html">Worlds, players &amp; controllers</a> &middot; <a href="object-dumps.html">Reading object dumps</a> &middot; <a href="workshop-inspector.html">Build a weapon inspector</a> &middot; <a href="testing.html">Test a mod step by step</a> &middot; <a href="target-inspector.html">Build a target inspector</a> &middot; <a href="range-lab.html">Plan a runtime range</a> &middot; <a href="weapons.html">Weapon assemblies</a> &middot; <a href="attachments.html">Attachments &amp; rails</a> &middot; <a href="weapon-stats.html">Weapon stats</a> &middot; <a href="ballistics.html">Shots &amp; ballistics</a> &middot; <a href="ammunition.html">Cartridges &amp; projectiles</a> &middot; <a href="reloads.html">Magazines &amp; reloading</a> &middot; <a href="aim-recoil.html">Aiming, cameras &amp; recoil</a> &middot; <a href="targets.html">Finding &amp; tracking targets</a> &middot; <a href="scoring.html">Hits &amp; scoring</a> &middot; <a href="ranges.html">Range menus &amp; travel</a> &middot; <a href="workshop-ui.html">Workshop UI</a> &middot; <a href="progression.html">Ownership &amp; unlocks</a> &middot; <a href="saves.html">Reading &amp; backing up saves</a> &middot; <a href="input-focus.html">Input, focus &amp; cursors</a> &middot; <a href="umg-layout.html">UMG panels &amp; layout</a> &middot; <a href="hud-nameplates.html">HUDs, markers &amp; nameplates</a> &middot; <a href="asset-loading.html">Asset paths &amp; loading</a> &middot; <a href="spawning.html">Spawning &amp; actor ownership</a> &middot; <a href="meshes-materials.html">Meshes, materials &amp; textures</a> &middot; <a href="lighting.html">Lighting &amp; exposure diagnosis</a> &middot; <a href="physics.html">Collision &amp; physics</a> &middot; <a href="audio.html">Weapon audio &amp; spatial sound</a> &middot; <a href="effects.html">Muzzle flashes, tracers &amp; impacts</a> &middot; <a href="multiplayer.html">Multiplayer architecture</a> &middot; <a href="steam.html">Steam sessions &amp; invites</a> &middot; <a href="network-protocol.html">Messages &amp; reliable events</a> &middot; <a href="interpolation.html">Movement interpolation</a> &middot; <a href="clock-sync.html">Clocks, latency &amp; round timing</a> &middot; <a href="chat.html">Chat, names &amp; text validation</a> &middot; <a href="paths.html">Game paths &amp; classes</a> &middot; <a href="custom-content.html">Custom content</a> &middot; <a href="packaging.html">Packaging a Lua mod</a> &middot; <a href="compatibility.html">Checking game updates</a> &middot; <a href="coverage.html">Coverage &amp; testing notes</a> &middot; <a href="tools.html">Tools &amp; resources</a> &middot; <a href="hook-reference.html">Game hook reference</a> &middot; <a href="glossary.html">Modding glossary</a> &middot; <a href="faq.html">Troubleshooting FAQ</a></p></noscript>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Modding glossary | Ballistic Modding Wiki</title>
+  <meta name="description" content="A practical vocabulary for reading the guides, logs and reflected game surface.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="glossary" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Modding glossary</h1><p class="lead">A practical vocabulary for reading the guides, logs and reflected game surface.</p>
+<h2 id="use">Use definitions as a starting point</h2>
+<p>These short definitions explain how the wiki uses common terms. Follow the linked guide for examples, required context and limitations. The same word can have different meanings at different layers: a map container is not a playable map, and a display name is not a network identity.</p>
+<h2 id="term-actor">Actor</h2>
+<p>A world-owned gameplay object. A visible mesh may be on a component or child actor rather than on the root itself.</p><p><a href="spawning.html">Read the related guide →</a></p>
+<h2 id="term-component">Component</h2>
+<p>An object providing part of an actor’s structure or behaviour, such as its visible mesh or physics body.</p><p><a href="physics.html">Read the related guide →</a></p>
+<h2 id="term-class">Class</h2>
+<p>The type used to create or identify instances. It is not interchangeable with a live object of that type.</p><p><a href="reflection.html">Read the related guide →</a></p>
+<h2 id="term-default-object">Class default object</h2>
+<p>The class’s defaults, distinct from the player’s current live instance. Changing defaults is not a targeted edit of one gun.</p><p><a href="reflection.html">Read the related guide →</a></p>
+<h2 id="term-reflection">Reflection</h2>
+<p>The named type/property/function surface exposed by Unreal and consumed by the binding. Not every C++ symbol is exposed.</p><p><a href="reflection.html">Read the related guide →</a></p>
+<h2 id="term-ufunction">UFunction</h2>
+<p>A reflected function candidate. Hook availability also depends on loading, signature and the installed binding.</p><p><a href="hooks.html">Read the related guide →</a></p>
+<h2 id="term-delegate">Delegate</h2>
+<p>An event/callback binding concept; not automatically a function supported by RegisterHook.</p><p><a href="hooks.html">Read the related guide →</a></p>
+<h2 id="term-wrapper">Parameter wrapper</h2>
+<p>A binding object around callback/container data. Unwrap and copy needed values according to the actual type and lifetime.</p><p><a href="containers.html">Read the related guide →</a></p>
+<h2 id="term-fname">FName</h2>
+<p>An Unreal identifier type. Use the representation expected by the target API instead of assuming it is a Lua string.</p><p><a href="unreal-types.html">Read the related guide →</a></p>
+<h2 id="term-ftext">FText</h2>
+<p>Unreal display/localisation text. Useful for native widget text setters, distinct from a persistent gameplay ID.</p><p><a href="unreal-types.html">Read the related guide →</a></p>
+<h2 id="term-soft-reference">Soft reference</h2>
+<p>A deferred content reference, not proof that the referenced class/object is currently loaded.</p><p><a href="asset-loading.html">Read the related guide →</a></p>
+<h2 id="term-array">Array</h2>
+<p>An ordered container. Reflected array binding/index rules must be checked separately from ordinary Lua lists.</p><p><a href="containers.html">Read the related guide →</a></p>
+<h2 id="term-set">Set</h2>
+<p>A typed membership collection. A loaded class and a soft class reference are not automatically equivalent keys.</p><p><a href="progression.html">Read the related guide →</a></p>
+<h2 id="term-map">Map container</h2>
+<p>A key/value collection. Distinct from “map” meaning a playable world/package.</p><p><a href="containers.html">Read the related guide →</a></p>
+<h2 id="term-world">World</h2>
+<p>The current runtime context containing actors. World-relative references and clocks need invalidation on travel.</p><p><a href="player-world.html">Read the related guide →</a></p>
+<h2 id="term-controller">Player controller</h2>
+<p>Input/pawn/camera-related local context. Not a permanent identity or a substitute for host authority.</p><p><a href="player-world.html">Read the related guide →</a></p>
+<h2 id="term-pawn">Pawn</h2>
+<p>The possessed player actor. A cosmetic proxy model is not automatically this actor.</p><p><a href="weapons.html">Read the related guide →</a></p>
+<h2 id="term-game-instance">Game instance</h2>
+<p>Cross-map runtime context holding observed selections/progression fields in the inspected game.</p><p><a href="saves.html">Read the related guide →</a></p>
+<h2 id="term-game-mode">Game mode</h2>
+<p>Authoritative mode context where available. Clients should not assume the host’s mode object is local.</p><p><a href="multiplayer.html">Read the related guide →</a></p>
+<h2 id="term-game-state">Game state</h2>
+<p>Shared gameplay/roster context; the local roster reads its player-state array.</p><p><a href="player-world.html">Read the related guide →</a></p>
+<h2 id="term-world-space">World space</h2>
+<p>Coordinates in the current world’s frame, distinct from a weapon-local or screen-space value.</p><p><a href="transforms.html">Read the related guide →</a></p>
+<h2 id="term-local-space">Local space</h2>
+<p>Coordinates relative to a chosen root/parent. Correct proxy reconstruction needs a consistent reference transform.</p><p><a href="transforms.html">Read the related guide →</a></p>
+<h2 id="term-quaternion">Quaternion</h2>
+<p>A rotation representation with X/Y/Z/W in the observed transform shape, not Pitch/Yaw/Roll copied under new names.</p><p><a href="transforms.html">Read the related guide →</a></p>
+<h2 id="term-mobility">Mobility</h2>
+<p>An engine actor/component setting relevant to allowed runtime movement/assignment; verify the intended component.</p><p><a href="spawning.html">Read the related guide →</a></p>
+<h2 id="term-collision">Collision</h2>
+<p>Physical/query interaction state, separate from whether an actor is visible.</p><p><a href="physics.html">Read the related guide →</a></p>
+<h2 id="term-material-instance">Material instance</h2>
+<p>A material-derived object used for per-instance parameter choices; parameter existence and slot still need checking.</p><p><a href="meshes-materials.html">Read the related guide →</a></p>
+<h2 id="term-emissive">Emissive diagnostic</h2>
+<p>A way to help prove geometry visibility; not a complete replacement for the intended lit scene.</p><p><a href="lighting.html">Read the related guide →</a></p>
+<h2 id="term-attenuation">Attenuation</h2>
+<p>Spatial sound presentation policy, including how a selected cue is heard with distance/context.</p><p><a href="audio.html">Read the related guide →</a></p>
+<h2 id="term-poi">Attachment POI</h2>
+<p>A workbench point widget referring to a mount component, current gun and popup list in the observed UI.</p><p><a href="attachments.html">Read the related guide →</a></p>
+<h2 id="term-template">Weapon template</h2>
+<p>Selected/persisted assembly data used to reconstruct a live gun; not itself the spawned usable actor.</p><p><a href="weapons.html">Read the related guide →</a></p>
+<h2 id="term-baseline">Baseline</h2>
+<p>A recorded state before the tested operation. It must use the same context/fields as the later comparison.</p><p><a href="weapon-stats.html">Read the related guide →</a></p>
+<h2 id="term-fixture">Native fixture</h2>
+<p>A controlled test using actual engine objects, with narrower scope than all player saves or real network sessions.</p><p><a href="testing.html">Read the related guide →</a></p>
+<h2 id="term-authority">Authority</h2>
+<p>The role allowed to decide accepted gameplay state. A display name or received packet does not establish it.</p><p><a href="multiplayer.html">Read the related guide →</a></p>
+<h2 id="term-snapshot">Snapshot</h2>
+<p>A state sample that may supersede an older sample. A save-file snapshot is also not continuous progression merging.</p><p><a href="network-protocol.html">Read the related guide →</a></p>
+<h2 id="term-event">Reliable event</h2>
+<p>A one-time action represented with identity/retry/acknowledgement rules so repeats can be handled safely.</p><p><a href="network-protocol.html">Read the related guide →</a></p>
+<h2 id="term-acknowledgement">Acknowledgement</h2>
+<p>A bound statement about accepted stream content, not a licence to retire another session’s events.</p><p><a href="network-protocol.html">Read the related guide →</a></p>
+<h2 id="term-revision">Revision</h2>
+<p>An identity for changed content such as weapon appearance, separate from a general snapshot sequence.</p><p><a href="network-protocol.html">Read the related guide →</a></p>
+<h2 id="term-generation">Session/world generation</h2>
+<p>A boundary that prevents old connection/range messages from being applied to the new context.</p><p><a href="clock-sync.html">Read the related guide →</a></p>
+<h2 id="term-interpolation">Interpolation</h2>
+<p>Rendering between known samples, often at a buffered time. It adds smoothness, not authority.</p><p><a href="interpolation.html">Read the related guide →</a></p>
+<h2 id="term-extrapolation">Extrapolation</h2>
+<p>A bounded estimate beyond the latest sample. It must not move a stale proxy indefinitely.</p><p><a href="interpolation.html">Read the related guide →</a></p>
+<h2 id="term-jitter">Jitter</h2>
+<p>Variation in update arrival intervals; different from just average latency.</p><p><a href="interpolation.html">Read the related guide →</a></p>
+<h2 id="term-settling">Settling phase</h2>
+<p>A bounded round phase implementing a documented end-time acceptance policy before the final result.</p><p><a href="scoring.html">Read the related guide →</a></p>
+<h2 id="term-cooked">Cooked content</h2>
+<p>Game-ready packaged Unreal assets, distinct from the developer’s editable source project or an external FBX.</p><p><a href="custom-content.html">Read the related guide →</a></p>
+<h2 id="term-idempotent">Idempotent action</h2>
+<p>Repeating the request does not duplicate the intended effect, such as one installed button or one accepted hit.</p><p><a href="network-protocol.html">Read the related guide →</a></p>
+<h2 id="term-backpressure">Backpressure</h2>
+<p>A deliberate response when pending work exceeds capacity, rather than unbounded queues or silent loss.</p><p><a href="performance.html">Read the related guide →</a></p>
+<h2 id="ambiguity">When a name is ambiguous</h2>
+<p>State the actual field, class, API or coordinate/time basis instead of relying on a broad label. “Weapon stats” can mean a per-part modifier, live current aggregate, installed aggregate or displayed UI text. “Connected” can mean invited, transport-linked or gameplay-ready. Precise terms make a bug report reproducible.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> &middot; <a href="installation.html">Installing UE4SS</a> &middot; <a href="first-mod.html">Your first mod</a> &middot; <a href="lua-basics.html">Lua basics for modding</a> &middot; <a href="project-structure.html">Organising a mod</a> &middot; <a href="changelog.html">Changelog</a> &middot; <a href="hooks.html">Working with hooks</a> &middot; <a href="objects.html">Finding game objects</a> &middot; <a href="runtime.html">Timers &amp; cleanup</a> &middot; <a href="data-tables.html">Reading data tables</a> &middot; <a href="debugging.html">Debugging</a> &middot; <a href="performance.html">Performance &amp; profiling</a> &middot; <a href="settings-files.html">Settings &amp; local files</a> &middot; <a href="reflection.html">Reflection, classes &amp; instances</a> &middot; <a href="unreal-types.html">Names, text &amp; soft references</a> &middot; <a href="containers.html">Arrays, sets &amp; maps</a> &middot; <a href="transforms.html">Vectors, rotations &amp; spaces</a> &middot; <a href="player-world.html">Worlds, players &amp; controllers</a> &middot; <a href="object-dumps.html">Reading object dumps</a> &middot; <a href="workshop-inspector.html">Build a weapon inspector</a> &middot; <a href="testing.html">Test a mod step by step</a> &middot; <a href="target-inspector.html">Build a target inspector</a> &middot; <a href="range-lab.html">Plan a runtime range</a> &middot; <a href="weapons.html">Weapon assemblies</a> &middot; <a href="attachments.html">Attachments &amp; rails</a> &middot; <a href="weapon-stats.html">Weapon stats</a> &middot; <a href="ballistics.html">Shots &amp; ballistics</a> &middot; <a href="ammunition.html">Cartridges &amp; projectiles</a> &middot; <a href="reloads.html">Magazines &amp; reloading</a> &middot; <a href="aim-recoil.html">Aiming, cameras &amp; recoil</a> &middot; <a href="targets.html">Finding &amp; tracking targets</a> &middot; <a href="scoring.html">Hits &amp; scoring</a> &middot; <a href="ranges.html">Range menus &amp; travel</a> &middot; <a href="workshop-ui.html">Workshop UI</a> &middot; <a href="progression.html">Ownership &amp; unlocks</a> &middot; <a href="saves.html">Reading &amp; backing up saves</a> &middot; <a href="input-focus.html">Input, focus &amp; cursors</a> &middot; <a href="umg-layout.html">UMG panels &amp; layout</a> &middot; <a href="hud-nameplates.html">HUDs, markers &amp; nameplates</a> &middot; <a href="asset-loading.html">Asset paths &amp; loading</a> &middot; <a href="spawning.html">Spawning &amp; actor ownership</a> &middot; <a href="meshes-materials.html">Meshes, materials &amp; textures</a> &middot; <a href="lighting.html">Lighting &amp; exposure diagnosis</a> &middot; <a href="physics.html">Collision &amp; physics</a> &middot; <a href="audio.html">Weapon audio &amp; spatial sound</a> &middot; <a href="effects.html">Muzzle flashes, tracers &amp; impacts</a> &middot; <a href="multiplayer.html">Multiplayer architecture</a> &middot; <a href="steam.html">Steam sessions &amp; invites</a> &middot; <a href="network-protocol.html">Messages &amp; reliable events</a> &middot; <a href="interpolation.html">Movement interpolation</a> &middot; <a href="clock-sync.html">Clocks, latency &amp; round timing</a> &middot; <a href="chat.html">Chat, names &amp; text validation</a> &middot; <a href="paths.html">Game paths &amp; classes</a> &middot; <a href="custom-content.html">Custom content</a> &middot; <a href="packaging.html">Packaging a Lua mod</a> &middot; <a href="compatibility.html">Checking game updates</a> &middot; <a href="coverage.html">Coverage &amp; testing notes</a> &middot; <a href="tools.html">Tools &amp; resources</a> &middot; <a href="hook-reference.html">Game hook reference</a> &middot; <a href="glossary.html">Modding glossary</a> &middot; <a href="faq.html">Troubleshooting FAQ</a></p></noscript>
+</body>
+</html>

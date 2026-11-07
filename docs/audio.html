@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Weapon audio &amp; spatial sound | Ballistic Modding Wiki</title>
+  <meta name="description" content="Reuse verified cooked cues and separate remote cosmetic sound from local weapon simulation.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="audio" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Weapon audio &amp; spatial sound</h1><p class="lead">Reuse verified cooked cues and separate remote cosmetic sound from local weapon simulation.</p>
+<h2 id="inventory">1. Inventory actual sound assets</h2>
+<p>The local code used cooked shot cues under /Game/SFX/Cues/Shots and handling cues under /Game/SFX/Cues/Manipulation/Generic. Native checks resolved the selected sound assets and exercised spatial playback calls. That does not establish the exact acoustic result for every gun and distance.</p><div class="table-scroll"><table><thead><tr><th>Cue example</th><th>Folder</th></tr></thead><tbody><tr><td>Shot_9mm / Shot_556mm / Shot_AirPellet</td><td>Shots</td></tr><tr><td>Shot_Supressed_S / Shot_Supressed_M / Shot_Supressed_L</td><td>Shots; preserve the asset’s spelling.</td></tr><tr><td>Release_mag_rifle_Cue / Insert_mag_rifle_Cue</td><td>Manipulation/Generic</td></tr><tr><td>Release_mag_pistol_Cue / Insert_mag_pistol_Cue</td><td>Manipulation/Generic</td></tr></tbody></table></div>
+<h2 id="load">2. Load and validate before playing</h2>
+<p>Load on the game thread and confirm SoundBase compatibility in the tested binding. Keep a bounded allowlist of supported cue identifiers. A network peer should choose an ID from that list, not an arbitrary path to load.</p><pre data-title="Context: game-thread callback; load/validation only" data-language="lua"><code>local sound = LoadAsset(&quot;/Game/SFX/Cues/Shots/Shot_9mm.Shot_9mm&quot;)
+local base = StaticFindObject(&quot;/Script/Engine.SoundBase&quot;)
+if not sound or not sound:IsValid() or not base or not base:IsValid()
+    or not sound:IsA(base) then return end</code></pre>
+<h2 id="position">3. Use the right source position</h2>
+<p>For a remote shot, use its captured muzzle/weapon position rather than the listener’s camera position. For a UI confirmation, world spatialisation may not be the intended presentation. Keep sound policy tied to the event type.</p><p>The local implementation passed a known shot attenuation asset to PlaySoundAtLocation. Inspect the reflected signature for your build before copying a long parameter list. A valid cue with inappropriate attenuation can sound wrong even though the function call succeeds.</p>
+<h2 id="classification">4. Document classification as a heuristic</h2>
+<p>The local selector used cartridge/weapon names, suppressor-related information and black-powder state to choose among a small cue list. That is a practical cosmetic mapping, not proof that it reproduces every weapon’s true base-game sound selection.</p><p>If the cue mapping is unknown, use a deliberate fallback and keep the diagnostic visible. Do not fabricate a precise per-calibre audio claim from one matching substring.</p>
+<h2 id="duplicates">5. Avoid duplicate playback</h2>
+<p>The firing player already hears the normal local weapon sound. A remote cosmetic event should not blindly play it again on the sender. Retransmitted reliable events also need deduplication so one shot does not produce several echoes from repeated packets.</p><p>Reload sounds should follow actual magazine/handling events rather than an assumed fixed animation timer where possible. Empty, cancelled or different reload paths can have different event sequences.</p>
+<h2 id="test">Listening test matrix</h2>
+<ul><li>Local shot without remote replay remains unchanged.</li><li>Remote shot plays once at the remote source position.</li><li>Distance and attenuation behave acceptably.</li><li>Suppressed/black-powder/fallback choices are documented.</li><li>Magazine release/insertion are not confused.</li><li>Mute/volume settings and travel cleanup work.</li></ul><p>Use actual listening checks in addition to asset-resolution logs. For network events, see <a href="network-protocol.html">Messages &amp; reliable events</a>.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> &middot; <a href="installation.html">Installing UE4SS</a> &middot; <a href="first-mod.html">Your first mod</a> &middot; <a href="lua-basics.html">Lua basics for modding</a> &middot; <a href="project-structure.html">Organising a mod</a> &middot; <a href="changelog.html">Changelog</a> &middot; <a href="hooks.html">Working with hooks</a> &middot; <a href="objects.html">Finding game objects</a> &middot; <a href="runtime.html">Timers &amp; cleanup</a> &middot; <a href="data-tables.html">Reading data tables</a> &middot; <a href="debugging.html">Debugging</a> &middot; <a href="performance.html">Performance &amp; profiling</a> &middot; <a href="settings-files.html">Settings &amp; local files</a> &middot; <a href="reflection.html">Reflection, classes &amp; instances</a> &middot; <a href="unreal-types.html">Names, text &amp; soft references</a> &middot; <a href="containers.html">Arrays, sets &amp; maps</a> &middot; <a href="transforms.html">Vectors, rotations &amp; spaces</a> &middot; <a href="player-world.html">Worlds, players &amp; controllers</a> &middot; <a href="object-dumps.html">Reading object dumps</a> &middot; <a href="workshop-inspector.html">Build a weapon inspector</a> &middot; <a href="testing.html">Test a mod step by step</a> &middot; <a href="target-inspector.html">Build a target inspector</a> &middot; <a href="range-lab.html">Plan a runtime range</a> &middot; <a href="weapons.html">Weapon assemblies</a> &middot; <a href="attachments.html">Attachments &amp; rails</a> &middot; <a href="weapon-stats.html">Weapon stats</a> &middot; <a href="ballistics.html">Shots &amp; ballistics</a> &middot; <a href="ammunition.html">Cartridges &amp; projectiles</a> &middot; <a href="reloads.html">Magazines &amp; reloading</a> &middot; <a href="aim-recoil.html">Aiming, cameras &amp; recoil</a> &middot; <a href="targets.html">Finding &amp; tracking targets</a> &middot; <a href="scoring.html">Hits &amp; scoring</a> &middot; <a href="ranges.html">Range menus &amp; travel</a> &middot; <a href="workshop-ui.html">Workshop UI</a> &middot; <a href="progression.html">Ownership &amp; unlocks</a> &middot; <a href="saves.html">Reading &amp; backing up saves</a> &middot; <a href="input-focus.html">Input, focus &amp; cursors</a> &middot; <a href="umg-layout.html">UMG panels &amp; layout</a> &middot; <a href="hud-nameplates.html">HUDs, markers &amp; nameplates</a> &middot; <a href="asset-loading.html">Asset paths &amp; loading</a> &middot; <a href="spawning.html">Spawning &amp; actor ownership</a> &middot; <a href="meshes-materials.html">Meshes, materials &amp; textures</a> &middot; <a href="lighting.html">Lighting &amp; exposure diagnosis</a> &middot; <a href="physics.html">Collision &amp; physics</a> &middot; <a href="audio.html">Weapon audio &amp; spatial sound</a> &middot; <a href="effects.html">Muzzle flashes, tracers &amp; impacts</a> &middot; <a href="multiplayer.html">Multiplayer architecture</a> &middot; <a href="steam.html">Steam sessions &amp; invites</a> &middot; <a href="network-protocol.html">Messages &amp; reliable events</a> &middot; <a href="interpolation.html">Movement interpolation</a> &middot; <a href="clock-sync.html">Clocks, latency &amp; round timing</a> &middot; <a href="chat.html">Chat, names &amp; text validation</a> &middot; <a href="paths.html">Game paths &amp; classes</a> &middot; <a href="custom-content.html">Custom content</a> &middot; <a href="packaging.html">Packaging a Lua mod</a> &middot; <a href="compatibility.html">Checking game updates</a> &middot; <a href="coverage.html">Coverage &amp; testing notes</a> &middot; <a href="tools.html">Tools &amp; resources</a> &middot; <a href="hook-reference.html">Game hook reference</a> &middot; <a href="glossary.html">Modding glossary</a> &middot; <a href="faq.html">Troubleshooting FAQ</a></p></noscript>
+</body>
+</html>

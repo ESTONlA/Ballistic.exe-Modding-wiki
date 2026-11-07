@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reading object dumps | Ballistic Modding Wiki</title>
+  <meta name="description" content="Turn a large object dump into a small, testable integration note.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="object-dumps" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Reading object dumps</h1><p class="lead">Turn a large object dump into a small, testable integration note.</p>
+<h2 id="capture-context">1. Capture the right context</h2>
+<p>A loaded-object dump describes the process at a moment, not every cooked asset in the installation. Open the menu or range that owns the feature before searching for its widgets and Blueprint functions. Keep the game/loader version and capture context with your dump.</p><p>Use the dump/viewer mechanism supported by your installed UE4SS release. Do not assume a keybind or developer command from another loader build exists locally. The normal loader API documentation is a starting reference, not proof your configuration enabled every utility.</p>
+<h2 id="search-first">2. Search for a narrow term</h2>
+<pre data-title="Example terminal searches with ripgrep" data-language="text"><code>rg -n &quot;Attach_POI_C:SetupAttachment&quot; UE4SS_ObjectDump.txt
+rg -n &quot;C_CartridgeBase:ChargeMass&quot; UE4SS_ObjectDump.txt
+rg -n &quot;Base_BoxMagazine_C:OnSnappedToSlot&quot; UE4SS_ObjectDump.txt</code></pre><p>Search the exact class/member once known. A broad word like “modifier” can return engine camera or animation systems unrelated to weapon stats. Read the owning path before deciding a match belongs to the gameplay feature.</p>
+<h2 id="read-entry">3. Read entry type and owner</h2>
+<p>A class entry names a type; a property entry gives an owner and reflected value type; a function entry identifies a callable integration candidate. Nearby property entries can describe function inputs, outputs, return values and Blueprint-generated local variables.</p><p>Do not treat every property listed beneath a function as a public argument. Names such as CallFunc or temporary array indices often belong to Blueprint implementation locals. Compare the actual parameter sequence with a small callback observation.</p>
+<h2 id="addresses">4. Ignore process addresses for published recipes</h2>
+<p>Addresses and offsets can help a native debugging session, but copied numbers from an old dump are not portable modding instructions. Prefer exact reflected names and typed APIs. Never use a pointer address as a network entity ID.</p><p>A useful published excerpt removes irrelevant process-specific addresses and explains the member’s role. This also keeps a reference page readable instead of turning it into a second enormous raw dump.</p>
+<h2 id="test-note">5. Promote a finding only after a check</h2>
+<pre data-title="A reusable research-note template" data-language="text"><code>Owner class:
+Exact member path:
+Reflected kind and types:
+Loaded in which menu/world:
+How the callback was observed:
+Which values were copied:
+Any mutation performed:
+Game/loader build and result:
+Remaining untested cases:</code></pre><p>A name found in a dump can be documented as a discovery point immediately. A claim that it safely removes a player’s fitted rail requires a different level of evidence. Keep that distinction visible in the <a href="hook-reference.html">hook reference</a>.</p>
+<h2 id="archive-vs-dump">Archive and dump disagreement</h2>
+<p>If an archive browser finds a package but the dump does not, the package may not be loaded. If a menu row names a map that cannot be entered, the reference alone did not prove a working destination. Use <a href="asset-loading.html">Asset paths &amp; loading</a> to test presence, loadability and behaviour in separate stages.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> &middot; <a href="installation.html">Installing UE4SS</a> &middot; <a href="first-mod.html">Your first mod</a> &middot; <a href="lua-basics.html">Lua basics for modding</a> &middot; <a href="project-structure.html">Organising a mod</a> &middot; <a href="changelog.html">Changelog</a> &middot; <a href="hooks.html">Working with hooks</a> &middot; <a href="objects.html">Finding game objects</a> &middot; <a href="runtime.html">Timers &amp; cleanup</a> &middot; <a href="data-tables.html">Reading data tables</a> &middot; <a href="debugging.html">Debugging</a> &middot; <a href="performance.html">Performance &amp; profiling</a> &middot; <a href="settings-files.html">Settings &amp; local files</a> &middot; <a href="reflection.html">Reflection, classes &amp; instances</a> &middot; <a href="unreal-types.html">Names, text &amp; soft references</a> &middot; <a href="containers.html">Arrays, sets &amp; maps</a> &middot; <a href="transforms.html">Vectors, rotations &amp; spaces</a> &middot; <a href="player-world.html">Worlds, players &amp; controllers</a> &middot; <a href="object-dumps.html">Reading object dumps</a> &middot; <a href="workshop-inspector.html">Build a weapon inspector</a> &middot; <a href="testing.html">Test a mod step by step</a> &middot; <a href="target-inspector.html">Build a target inspector</a> &middot; <a href="range-lab.html">Plan a runtime range</a> &middot; <a href="weapons.html">Weapon assemblies</a> &middot; <a href="attachments.html">Attachments &amp; rails</a> &middot; <a href="weapon-stats.html">Weapon stats</a> &middot; <a href="ballistics.html">Shots &amp; ballistics</a> &middot; <a href="ammunition.html">Cartridges &amp; projectiles</a> &middot; <a href="reloads.html">Magazines &amp; reloading</a> &middot; <a href="aim-recoil.html">Aiming, cameras &amp; recoil</a> &middot; <a href="targets.html">Finding &amp; tracking targets</a> &middot; <a href="scoring.html">Hits &amp; scoring</a> &middot; <a href="ranges.html">Range menus &amp; travel</a> &middot; <a href="workshop-ui.html">Workshop UI</a> &middot; <a href="progression.html">Ownership &amp; unlocks</a> &middot; <a href="saves.html">Reading &amp; backing up saves</a> &middot; <a href="input-focus.html">Input, focus &amp; cursors</a> &middot; <a href="umg-layout.html">UMG panels &amp; layout</a> &middot; <a href="hud-nameplates.html">HUDs, markers &amp; nameplates</a> &middot; <a href="asset-loading.html">Asset paths &amp; loading</a> &middot; <a href="spawning.html">Spawning &amp; actor ownership</a> &middot; <a href="meshes-materials.html">Meshes, materials &amp; textures</a> &middot; <a href="lighting.html">Lighting &amp; exposure diagnosis</a> &middot; <a href="physics.html">Collision &amp; physics</a> &middot; <a href="audio.html">Weapon audio &amp; spatial sound</a> &middot; <a href="effects.html">Muzzle flashes, tracers &amp; impacts</a> &middot; <a href="multiplayer.html">Multiplayer architecture</a> &middot; <a href="steam.html">Steam sessions &amp; invites</a> &middot; <a href="network-protocol.html">Messages &amp; reliable events</a> &middot; <a href="interpolation.html">Movement interpolation</a> &middot; <a href="clock-sync.html">Clocks, latency &amp; round timing</a> &middot; <a href="chat.html">Chat, names &amp; text validation</a> &middot; <a href="paths.html">Game paths &amp; classes</a> &middot; <a href="custom-content.html">Custom content</a> &middot; <a href="packaging.html">Packaging a Lua mod</a> &middot; <a href="compatibility.html">Checking game updates</a> &middot; <a href="coverage.html">Coverage &amp; testing notes</a> &middot; <a href="tools.html">Tools &amp; resources</a> &middot; <a href="hook-reference.html">Game hook reference</a> &middot; <a href="glossary.html">Modding glossary</a> &middot; <a href="faq.html">Troubleshooting FAQ</a></p></noscript>
+</body>
+</html>

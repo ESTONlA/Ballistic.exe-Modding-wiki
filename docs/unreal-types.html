@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Names, text &amp; soft references | Ballistic Modding Wiki</title>
+  <meta name="description" content="Choose the right representation for names, display text, classes and references.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="unreal-types" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Names, text &amp; soft references</h1><p class="lead">Choose the right representation for names, display text, classes and references.</p>
+<h2 id="string-families">Names and display text are different</h2>
+<p>A Lua string is ordinary script text. Unreal also has FString, FName and FText. Epic describes FName as an identifier type and FText as the user-facing/localisation text type. Those purposes do not mean every binding accepts either one automatically. See <a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/string-handling-in-unreal-engine">Epic’s string-handling reference</a>.</p><div class="table-scroll"><table><thead><tr><th>Value</th><th>Typical use in these guides</th></tr></thead><tbody><tr><td>Lua string</td><td>Logging, configuration and the tested FindRow argument.</td></tr><tr><td>FName</td><td>Row/identifier values where the engine signature expects a name.</td></tr><tr><td>FText</td><td>Setting a native widget’s displayed text.</td></tr><tr><td>Loaded UClass</td><td>Choosing the class to instantiate or fit.</td></tr><tr><td>Soft class reference</td><td>A deferred content reference stored in progression/templates.</td></tr></tbody></table></div>
+<h2 id="follow-signature">1. Follow the called API’s signature</h2>
+<p>The local range-table test used FindRow("PistolRange"). Passing an FName to that particular binding did not return the row. Other APIs in the same game do expect FName. The correct conclusion is to match each API, not to replace every name with a string everywhere.</p><pre data-title="Context fragments: valid data/label; not one universal conversion recipe" data-language="lua"><code>-- Each line illustrates a different destination type.
+local row = data:FindRow(&quot;PistolRange&quot;)
+local id = FName(&quot;PistolRange&quot;)
+label:SetText(FText(&quot;My range&quot;))</code></pre><p>Keep reflected member spellings exact, including generated suffixes. FName’s comparison behaviour does not justify changing filenames, Blueprint property spellings or authored asset paths arbitrarily.</p>
+<h2 id="copy-values">2. Convert only for the purpose you need</h2>
+<p>Convert a name/text value to a Lua-readable string for logging or a copied UI snapshot. That does not preserve every localisation or identity property of the original object. Don’t use a translated display label as the persistent ID for a target or part.</p><p>If an object lookup expects a class path, keep that path in a distinct field from its display name. A stable internal ID and a user-facing label can change independently; a language switch should not change gameplay identity.</p>
+<h2 id="soft-references">3. Treat soft references as a separate type</h2>
+<p>A stored soft reference is not necessarily an already loaded UObject. Inspect its type and the supported conversion/load path. An ownership set storing soft class references cannot safely be treated as a set of arbitrary loaded UClass values.</p><p>The local ownership experiment crashed after using the wrong representation in a native set check. A later isolated conversion probe established one safe call, not a complete ownership solution. Use <a href="progression.html">Ownership &amp; unlocks</a> for the full investigation and its remaining limits.</p>
+<h2 id="struct-values">4. Copy small struct values explicitly</h2>
+<p>Positions, rotations and colours are structs with named fields in these bindings. Copy the fields you need into ordinary Lua data for later comparison. Don’t assume that retaining a borrowed wrapper makes it independent of the native owner or callback lifetime.</p><pre data-title="Context: valid actor on the game thread" data-language="lua"><code>local raw = actor:K2_GetActorLocation()
+local saved = {X = raw.X, Y = raw.Y, Z = raw.Z}
+-- saved is a snapshot, not a live engine reference.</code></pre>
+<h2 id="checklist">Troubleshooting type mismatches</h2>
+<ul><li>Write down the stored type and the function’s expected type.</li><li>Inspect the original path before normalising it.</li><li>Distinguish unavailable from a real nil/false/zero value.</li><li>Test a single known positive and negative case before a whole catalog.</li><li>Do not use pcall as a claim of native memory safety.</li></ul><p>Use <a href="containers.html">Arrays, sets &amp; maps</a> for container-specific handling and <a href="data-tables.html">Reading data tables</a> for generated row fields.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> &middot; <a href="installation.html">Installing UE4SS</a> &middot; <a href="first-mod.html">Your first mod</a> &middot; <a href="lua-basics.html">Lua basics for modding</a> &middot; <a href="project-structure.html">Organising a mod</a> &middot; <a href="changelog.html">Changelog</a> &middot; <a href="hooks.html">Working with hooks</a> &middot; <a href="objects.html">Finding game objects</a> &middot; <a href="runtime.html">Timers &amp; cleanup</a> &middot; <a href="data-tables.html">Reading data tables</a> &middot; <a href="debugging.html">Debugging</a> &middot; <a href="performance.html">Performance &amp; profiling</a> &middot; <a href="settings-files.html">Settings &amp; local files</a> &middot; <a href="reflection.html">Reflection, classes &amp; instances</a> &middot; <a href="unreal-types.html">Names, text &amp; soft references</a> &middot; <a href="containers.html">Arrays, sets &amp; maps</a> &middot; <a href="transforms.html">Vectors, rotations &amp; spaces</a> &middot; <a href="player-world.html">Worlds, players &amp; controllers</a> &middot; <a href="object-dumps.html">Reading object dumps</a> &middot; <a href="workshop-inspector.html">Build a weapon inspector</a> &middot; <a href="testing.html">Test a mod step by step</a> &middot; <a href="target-inspector.html">Build a target inspector</a> &middot; <a href="range-lab.html">Plan a runtime range</a> &middot; <a href="weapons.html">Weapon assemblies</a> &middot; <a href="attachments.html">Attachments &amp; rails</a> &middot; <a href="weapon-stats.html">Weapon stats</a> &middot; <a href="ballistics.html">Shots &amp; ballistics</a> &middot; <a href="ammunition.html">Cartridges &amp; projectiles</a> &middot; <a href="reloads.html">Magazines &amp; reloading</a> &middot; <a href="aim-recoil.html">Aiming, cameras &amp; recoil</a> &middot; <a href="targets.html">Finding &amp; tracking targets</a> &middot; <a href="scoring.html">Hits &amp; scoring</a> &middot; <a href="ranges.html">Range menus &amp; travel</a> &middot; <a href="workshop-ui.html">Workshop UI</a> &middot; <a href="progression.html">Ownership &amp; unlocks</a> &middot; <a href="saves.html">Reading &amp; backing up saves</a> &middot; <a href="input-focus.html">Input, focus &amp; cursors</a> &middot; <a href="umg-layout.html">UMG panels &amp; layout</a> &middot; <a href="hud-nameplates.html">HUDs, markers &amp; nameplates</a> &middot; <a href="asset-loading.html">Asset paths &amp; loading</a> &middot; <a href="spawning.html">Spawning &amp; actor ownership</a> &middot; <a href="meshes-materials.html">Meshes, materials &amp; textures</a> &middot; <a href="lighting.html">Lighting &amp; exposure diagnosis</a> &middot; <a href="physics.html">Collision &amp; physics</a> &middot; <a href="audio.html">Weapon audio &amp; spatial sound</a> &middot; <a href="effects.html">Muzzle flashes, tracers &amp; impacts</a> &middot; <a href="multiplayer.html">Multiplayer architecture</a> &middot; <a href="steam.html">Steam sessions &amp; invites</a> &middot; <a href="network-protocol.html">Messages &amp; reliable events</a> &middot; <a href="interpolation.html">Movement interpolation</a> &middot; <a href="clock-sync.html">Clocks, latency &amp; round timing</a> &middot; <a href="chat.html">Chat, names &amp; text validation</a> &middot; <a href="paths.html">Game paths &amp; classes</a> &middot; <a href="custom-content.html">Custom content</a> &middot; <a href="packaging.html">Packaging a Lua mod</a> &middot; <a href="compatibility.html">Checking game updates</a> &middot; <a href="coverage.html">Coverage &amp; testing notes</a> &middot; <a href="tools.html">Tools &amp; resources</a> &middot; <a href="hook-reference.html">Game hook reference</a> &middot; <a href="glossary.html">Modding glossary</a> &middot; <a href="faq.html">Troubleshooting FAQ</a></p></noscript>
+</body>
+</html>

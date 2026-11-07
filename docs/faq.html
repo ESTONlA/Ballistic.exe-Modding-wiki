@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Troubleshooting FAQ | Ballistic Modding Wiki</title>
+  <meta name="description" content="Work through common failures by identifying the first layer that is actually broken.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="faq" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Troubleshooting FAQ</h1><p class="lead">Work through common failures by identifying the first layer that is actually broken.</p>
+<h2 id="no-mod">Why is there no startup message?</h2>
+<p>Check a fresh loader log, then the actual installed folder, enabled marker, file extensions and script path. A source project and a ZIP existing on disk do not mean the loader is running either. Add a unique version prefix and follow <a href="first-mod.html">Your first mod</a>.</p>
+<h2 id="no-key">The mod loads, but the key does nothing</h2>
+<p>Focus the game, verify the configured key and remove duplicate/conflicting registrations in the test setup. Start with a log-only callback. If that works, the input registration is not the first broken layer; inspect object context and the scheduled action next. See <a href="input-focus.html">Input and focus</a>.</p>
+<h2 id="luau">Can I use Roblox Luau code?</h2>
+<p>The examples target UE4SS Lua and its APIs. Roblox services, Instance APIs and Luau-only syntax are not supplied by the game. Translate the actual language/API assumptions rather than changing the extension on a Roblox script. Begin with <a href="lua-basics.html">Lua basics</a>.</p>
+<h2 id="trivial">Why does a method say TrivialObject is not callable?</h2>
+<p>Confirm the member is a reflected function exposed by this build. A familiar C++ name is not proof it is available through this binding. Inspect the dump for the actual K2/reflected method and verify the owning instance before calling it. See <a href="reflection.html">Reflection</a>.</p>
+<h2 id="nil">Why is a reference nil after it worked before?</h2>
+<p>A menu rebuild, weapon switch or travel can replace the native owner. Reacquire world-specific references and cancel pending jobs with the old context. A Lua variable retaining a wrapper does not guarantee the native object remained valid. See <a href="runtime.html">Timers and cleanup</a>.</p>
+<h2 id="freeze">Why did an array loop freeze?</h2>
+<p>Check whether it is a reflected Unreal container rather than a plain Lua table, and whether iteration can exceed the reported count. Also check callback recursion. The recorded wrapper issue was avoided with a bounded numeric loop; do not apply ipairs blindly to every engine container. See <a href="containers.html">Arrays, sets and maps</a>.</p>
+<h2 id="negative">Removing a grip makes the stat negative—is that a bug?</h2>
+<p>Compare the same field/context before fitting, while fitted and after removal. A negative baseline returning to itself is different from an accumulated penalty. Repeating the exact rail/part case and checking the editor/live/save lifetimes is essential. The recorded synthetic test did not reproduce the player’s alleged residue. See <a href="weapon-stats.html">Weapon stats</a>.</p>
+<h2 id="owned">Why are known owned parts missing?</h2>
+<p>Purchased, default, fitted, unlocked and visible are not the same states. Verify the stored reference type and a small set of named positive/negative examples against the real menu. Earlier save-index filters were not a completed reliable ownership API. See <a href="progression.html">Ownership and unlocks</a>.</p>
+<h2 id="card">The custom range card works, but it opens the pool</h2>
+<p>The card’s title/layout and the destination are separate. Check the actual map ID/package selected and the loaded world after travel. A new UI row does not create a new cooked map; a runtime scene can still be hosted by the pool world. See <a href="ranges.html">Range menus and travel</a>.</p>
+<h2 id="dark">The scene spawned but is almost black</h2>
+<p>Keep a known object/material fixed and inspect placement, occlusion and the actual light/postprocess components affecting the view. Visible dark silhouettes are not proof of a view-distance failure. An emissive diagnostic is not a finished outdoor lighting solution. Use <a href="lighting.html">Lighting diagnosis</a>.</p>
+<h2 id="fbx">Can a Lua script use my FBX as a normal weapon mesh?</h2>
+<p>An FBX source file is not a cooked Unreal mesh/class. The local procedural/texture probes did not establish a finished usable weapon import pipeline. Decide whether you need a runtime preview or proper asset integration and document that scope. See <a href="custom-content.html">Custom content</a>.</p>
+<h2 id="gun">Both players arrive, but a gun is missing</h2>
+<p>Check the local usable gun, selected template and remote cosmetic proxy separately. Travel can require reacquiring the pawn and rebuilding loadout/visual state. A friend’s visible model is not proof the local inventory weapon exists, and vice versa. See <a href="weapons.html">Weapon assemblies</a>.</p>
+<h2 id="steam">Does Steam automatically synchronise every target and score?</h2>
+<p>No. Identity, session and transport are separate from your gameplay protocol. Choose authority, event identity, target state and interruption rules, then test them on both peers. A successful invite or connection is only the first milestone. See <a href="steam.html">Steam sessions</a>.</p>
+<h2 id="lag">Does relaying mean there cannot be lag?</h2>
+<p>Transport does not eliminate latency, jitter, loss or application mistakes. Observe the actual session and keep movement interpolation, reliable events and score timing as separate concerns. Don’t promise a particular route or performance from an invite screenshot. See <a href="interpolation.html">Movement interpolation</a>.</p>
+<h2 id="duplicate">Why are hits or chat displayed twice?</h2>
+<p>Look for duplicate callback registration, base/derived handling of the same event, resend without deduplication, or a local cosmetic event replaying on its sender. Track event ID, session/round context and accepted acknowledgement. See <a href="network-protocol.html">Reliable events</a>.</p>
+<h2 id="save">Does sharing the host save merge progression?</h2>
+<p>A one-way persisted snapshot does not merge simultaneous progress or replicate future unsaved changes. Receiving and applying must be separate actions with a verified backup/reload path. See <a href="saves.html">Reading and backing up saves</a>.</p>
+<h2 id="tests">A local test passed—can I claim full compatibility?</h2>
+<p>State exactly which test passed. Language/mocks, native fixtures, real menu use, save/reload and independent real peers establish different things. A narrow result is still useful; expanding the claim without another test is not. See <a href="testing.html">Test a mod step by step</a>.</p>
+<h2 id="coverage">Does this wiki now cover the whole game?</h2>
+<p>It covers a broad practical modding surface, with explicit gaps in areas such as complete ballistic internals, universal ownership rules, full save schema and cooked-content support. Page count is not a measured fraction of the game. The <a href="coverage.html">coverage page</a> records those limits and evidence levels.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> &middot; <a href="installation.html">Installing UE4SS</a> &middot; <a href="first-mod.html">Your first mod</a> &middot; <a href="lua-basics.html">Lua basics for modding</a> &middot; <a href="project-structure.html">Organising a mod</a> &middot; <a href="changelog.html">Changelog</a> &middot; <a href="hooks.html">Working with hooks</a> &middot; <a href="objects.html">Finding game objects</a> &middot; <a href="runtime.html">Timers &amp; cleanup</a> &middot; <a href="data-tables.html">Reading data tables</a> &middot; <a href="debugging.html">Debugging</a> &middot; <a href="performance.html">Performance &amp; profiling</a> &middot; <a href="settings-files.html">Settings &amp; local files</a> &middot; <a href="reflection.html">Reflection, classes &amp; instances</a> &middot; <a href="unreal-types.html">Names, text &amp; soft references</a> &middot; <a href="containers.html">Arrays, sets &amp; maps</a> &middot; <a href="transforms.html">Vectors, rotations &amp; spaces</a> &middot; <a href="player-world.html">Worlds, players &amp; controllers</a> &middot; <a href="object-dumps.html">Reading object dumps</a> &middot; <a href="workshop-inspector.html">Build a weapon inspector</a> &middot; <a href="testing.html">Test a mod step by step</a> &middot; <a href="target-inspector.html">Build a target inspector</a> &middot; <a href="range-lab.html">Plan a runtime range</a> &middot; <a href="weapons.html">Weapon assemblies</a> &middot; <a href="attachments.html">Attachments &amp; rails</a> &middot; <a href="weapon-stats.html">Weapon stats</a> &middot; <a href="ballistics.html">Shots &amp; ballistics</a> &middot; <a href="ammunition.html">Cartridges &amp; projectiles</a> &middot; <a href="reloads.html">Magazines &amp; reloading</a> &middot; <a href="aim-recoil.html">Aiming, cameras &amp; recoil</a> &middot; <a href="targets.html">Finding &amp; tracking targets</a> &middot; <a href="scoring.html">Hits &amp; scoring</a> &middot; <a href="ranges.html">Range menus &amp; travel</a> &middot; <a href="workshop-ui.html">Workshop UI</a> &middot; <a href="progression.html">Ownership &amp; unlocks</a> &middot; <a href="saves.html">Reading &amp; backing up saves</a> &middot; <a href="input-focus.html">Input, focus &amp; cursors</a> &middot; <a href="umg-layout.html">UMG panels &amp; layout</a> &middot; <a href="hud-nameplates.html">HUDs, markers &amp; nameplates</a> &middot; <a href="asset-loading.html">Asset paths &amp; loading</a> &middot; <a href="spawning.html">Spawning &amp; actor ownership</a> &middot; <a href="meshes-materials.html">Meshes, materials &amp; textures</a> &middot; <a href="lighting.html">Lighting &amp; exposure diagnosis</a> &middot; <a href="physics.html">Collision &amp; physics</a> &middot; <a href="audio.html">Weapon audio &amp; spatial sound</a> &middot; <a href="effects.html">Muzzle flashes, tracers &amp; impacts</a> &middot; <a href="multiplayer.html">Multiplayer architecture</a> &middot; <a href="steam.html">Steam sessions &amp; invites</a> &middot; <a href="network-protocol.html">Messages &amp; reliable events</a> &middot; <a href="interpolation.html">Movement interpolation</a> &middot; <a href="clock-sync.html">Clocks, latency &amp; round timing</a> &middot; <a href="chat.html">Chat, names &amp; text validation</a> &middot; <a href="paths.html">Game paths &amp; classes</a> &middot; <a href="custom-content.html">Custom content</a> &middot; <a href="packaging.html">Packaging a Lua mod</a> &middot; <a href="compatibility.html">Checking game updates</a> &middot; <a href="coverage.html">Coverage &amp; testing notes</a> &middot; <a href="tools.html">Tools &amp; resources</a> &middot; <a href="hook-reference.html">Game hook reference</a> &middot; <a href="glossary.html">Modding glossary</a> &middot; <a href="faq.html">Troubleshooting FAQ</a></p></noscript>
+</body>
+</html>

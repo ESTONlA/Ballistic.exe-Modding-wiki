@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HUDs, markers &amp; nameplates | Ballistic Modding Wiki</title>
+  <meta name="description" content="Design local overlays and world labels with clear identity, lifetime and presentation rules.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="hud-nameplates" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>HUDs, markers &amp; nameplates</h1><p class="lead">Design local overlays and world labels with clear identity, lifetime and presentation rules.</p>
+<h2 id="choose">1. Choose screen HUD or world text</h2>
+<p>A screen-space HUD is appropriate for session status and local controls. A world-space nameplate follows an actor and needs a position, orientation and visibility policy. Avoid turning every label into the same kind of widget merely because one creation example is convenient.</p><p>Keep the displayed name separate from the stable player/session identity. A renamed or duplicate display name must not change who owns a score or remote gun.</p>
+<h2 id="world-text">2. Create a label with deliberate ownership</h2>
+<p>The local nameplate implementation spawned TextRenderActor, disabled collision and replication for its cosmetic proxy, configured the text component, and updated its transform relative to the player/camera. This was a mod-owned visual actor, not a new authoritative player pawn.</p><p>Track the label for cleanup and recreate it for the current world if needed. Do not keep an old-world text actor in a global player record after travel.</p>
+<h2 id="position">3. Choose position and facing</h2>
+<p>Use a known offset above the relevant actor, and orient toward the current camera where appropriate. A proxy body, real pawn and text label may have different root origins; inspect their actual transforms before choosing the offset.</p><p>Distance labels need a documented world-unit conversion. The local marker display divided its measured world distance by 100 for metres in that setup. Confirm scale with a known reference rather than applying that factor blindly to imported geometry.</p>
+<h2 id="names">4. Validate names as display text</h2>
+<p>Remove control characters, keep a bounded UTF-8-safe length and avoid interpreting markup-like input. A plain display name is not code or a file path. See <a href="chat.html">Chat, names &amp; text validation</a> for the shared text problem.</p><p>Do not replace an unavailable player name with a nil concatenation that crashes every render update. Use a clearly defined fallback while preserving the internal identity.</p>
+<h2 id="hud-updates">5. Avoid redundant HUD writes</h2>
+<p>Cache successfully applied text, visibility and enabled state within the current widget tree. Update only when the desired value changes. If a setter fails, keep the entry retryable rather than marking a value as successfully displayed.</p><p>On menu rebuild, invalidate the cache because the old widget objects no longer describe the new tree. A global text cache detached from widget identity can leave new labels blank.</p>
+<h2 id="acceptance">Verify the presentation</h2>
+<ul><li>Labels follow the intended actor through movement and aim.</li><li>Two players with similar names remain distinct internally.</li><li>Long/Unicode names fit or truncate safely.</li><li>Close-range hiding, distance display and away state follow a defined policy.</li><li>Opening the local menu does not leave a duplicate overlay visible unintentionally.</li><li>Travel, disconnect and feature close remove the correct labels.</li></ul><p>Projection into screen space is another transform stage; verify the current camera and the actual projection binding before converting world positions into canvas coordinates.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> &middot; <a href="installation.html">Installing UE4SS</a> &middot; <a href="first-mod.html">Your first mod</a> &middot; <a href="lua-basics.html">Lua basics for modding</a> &middot; <a href="project-structure.html">Organising a mod</a> &middot; <a href="changelog.html">Changelog</a> &middot; <a href="hooks.html">Working with hooks</a> &middot; <a href="objects.html">Finding game objects</a> &middot; <a href="runtime.html">Timers &amp; cleanup</a> &middot; <a href="data-tables.html">Reading data tables</a> &middot; <a href="debugging.html">Debugging</a> &middot; <a href="performance.html">Performance &amp; profiling</a> &middot; <a href="settings-files.html">Settings &amp; local files</a> &middot; <a href="reflection.html">Reflection, classes &amp; instances</a> &middot; <a href="unreal-types.html">Names, text &amp; soft references</a> &middot; <a href="containers.html">Arrays, sets &amp; maps</a> &middot; <a href="transforms.html">Vectors, rotations &amp; spaces</a> &middot; <a href="player-world.html">Worlds, players &amp; controllers</a> &middot; <a href="object-dumps.html">Reading object dumps</a> &middot; <a href="workshop-inspector.html">Build a weapon inspector</a> &middot; <a href="testing.html">Test a mod step by step</a> &middot; <a href="target-inspector.html">Build a target inspector</a> &middot; <a href="range-lab.html">Plan a runtime range</a> &middot; <a href="weapons.html">Weapon assemblies</a> &middot; <a href="attachments.html">Attachments &amp; rails</a> &middot; <a href="weapon-stats.html">Weapon stats</a> &middot; <a href="ballistics.html">Shots &amp; ballistics</a> &middot; <a href="ammunition.html">Cartridges &amp; projectiles</a> &middot; <a href="reloads.html">Magazines &amp; reloading</a> &middot; <a href="aim-recoil.html">Aiming, cameras &amp; recoil</a> &middot; <a href="targets.html">Finding &amp; tracking targets</a> &middot; <a href="scoring.html">Hits &amp; scoring</a> &middot; <a href="ranges.html">Range menus &amp; travel</a> &middot; <a href="workshop-ui.html">Workshop UI</a> &middot; <a href="progression.html">Ownership &amp; unlocks</a> &middot; <a href="saves.html">Reading &amp; backing up saves</a> &middot; <a href="input-focus.html">Input, focus &amp; cursors</a> &middot; <a href="umg-layout.html">UMG panels &amp; layout</a> &middot; <a href="hud-nameplates.html">HUDs, markers &amp; nameplates</a> &middot; <a href="asset-loading.html">Asset paths &amp; loading</a> &middot; <a href="spawning.html">Spawning &amp; actor ownership</a> &middot; <a href="meshes-materials.html">Meshes, materials &amp; textures</a> &middot; <a href="lighting.html">Lighting &amp; exposure diagnosis</a> &middot; <a href="physics.html">Collision &amp; physics</a> &middot; <a href="audio.html">Weapon audio &amp; spatial sound</a> &middot; <a href="effects.html">Muzzle flashes, tracers &amp; impacts</a> &middot; <a href="multiplayer.html">Multiplayer architecture</a> &middot; <a href="steam.html">Steam sessions &amp; invites</a> &middot; <a href="network-protocol.html">Messages &amp; reliable events</a> &middot; <a href="interpolation.html">Movement interpolation</a> &middot; <a href="clock-sync.html">Clocks, latency &amp; round timing</a> &middot; <a href="chat.html">Chat, names &amp; text validation</a> &middot; <a href="paths.html">Game paths &amp; classes</a> &middot; <a href="custom-content.html">Custom content</a> &middot; <a href="packaging.html">Packaging a Lua mod</a> &middot; <a href="compatibility.html">Checking game updates</a> &middot; <a href="coverage.html">Coverage &amp; testing notes</a> &middot; <a href="tools.html">Tools &amp; resources</a> &middot; <a href="hook-reference.html">Game hook reference</a> &middot; <a href="glossary.html">Modding glossary</a> &middot; <a href="faq.html">Troubleshooting FAQ</a></p></noscript>
+</body>
+</html>

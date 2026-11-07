@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vectors, rotations &amp; spaces | Ballistic Modding Wiki</title>
+  <meta name="description" content="Place objects in the right coordinate space and diagnose wrong scale or orientation.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="transforms" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Vectors, rotations &amp; spaces</h1><p class="lead">Place objects in the right coordinate space and diagnose wrong scale or orientation.</p>
+<h2 id="spaces">Start with a coordinate-space label</h2>
+<p>Epic documents Unreal’s usual world convention as left-handed, Z-up, with X forward and Y right. World, local and screen space are different contexts; importing a model from another tool can require a basis conversion. See <a href="https://dev.epicgames.com/documentation/unreal-engine/coordinate-system-and-spaces-in-unreal-engine">coordinate systems and spaces</a> for that convention.</p><p>Label every stored transform in your own code: worldPosition, weaponLocalPosition or screenPosition. The label prevents a large class of bugs that otherwise look like a mysterious constant offset.</p>
+<h2 id="position-rotation-scale">1. Separate position, rotation and scale</h2>
+<div class="table-scroll"><table><thead><tr><th>Value</th><th>Local binding shape seen in examples</th></tr></thead><tbody><tr><td>Location vector</td><td>X, Y, Z</td></tr><tr><td>Rotator</td><td>Pitch, Yaw, Roll</td></tr><tr><td>Transform rotation</td><td>Quaternion fields X, Y, Z, W</td></tr><tr><td>Transform scale</td><td>Scale3D with X, Y, Z</td></tr></tbody></table></div><p>A quaternion’s W is not a rotator roll. Don’t copy three quaternion components into Pitch/Yaw/Roll or assume imported Euler angles use the same order and units.</p>
+<h2 id="known-object">2. Calibrate one object</h2>
+<p>Start with one known cooked mesh and neutral scale. Place it a small safe distance from a known reference and log requested versus actual location. Check its bounds and facing before assembling twenty objects. A mesh’s modelling origin may be far from the part you think of as its centre.</p><p>For a weapon preview, distinguish model-space scale from the root actor and parent component transforms. Repeated arbitrary scale changes can hide a wrong parent transform rather than solve it.</p>
+<h2 id="relative-capture">3. Capture relative transforms for attachments</h2>
+<p>A proxy gun should preserve the child mesh’s relationship to the gun root, not copy the original player’s world position. Capture the root transform, transform child world positions into root-local space, then rebuild them against the destination root.</p><p>The local proxy code used KismetMathLibrary inverse-transform helpers rather than subtracting world positions alone. Position subtraction ignores root rotation and scale. Verify moving, turning, aiming and switching weapons, not just a single static pose.</p>
+<h2 id="angle-wrap">4. Interpolate yaw across the wrap</h2>
+<pre data-title="Pure Lua yaw interpolation" data-language="lua"><code>local function yawBetween(a, b, alpha)
+    local difference = (b - a + 180) % 360 - 180
+    return a + difference * alpha
+end
+
+-- The halfway orientation follows the short arc near 180 degrees.
+local middle = yawBetween(179, -179, 0.5)</code></pre><p>A plain average of 179 and -179 is zero, which points the wrong way for the intended short transition. General 3D rotation interpolation needs the appropriate rotation representation; the yaw example is intentionally limited to a single axis.</p>
+<h2 id="vector-validation">5. Validate positions before applying them</h2>
+<p>Reject non-numeric, NaN, infinite or unreasonably large coordinates in network or imported data. Keep a deliberate bound for the feature’s world scale. A malformed pose should not teleport a proxy to a huge coordinate or enter a physics call.</p><pre data-title="Pure Lua example bound, not a universal game-world limit" data-language="lua"><code>local function finite(n)
+    return type(n) == &quot;number&quot; and n == n and math.abs(n) &lt; 10000000
+end
+local function positionOK(p)
+    return type(p) == &quot;table&quot; and finite(p.X) and finite(p.Y) and finite(p.Z)
+end</code></pre>
+<h2 id="diagnosis">Diagnose by symptom</h2>
+<p>A model following the player but facing backwards suggests a basis/orientation issue. A model drifting when the gun turns suggests a space-conversion error. Correct position with wrong size suggests scale/origin assumptions. A successful location setter with nothing visible also requires checking occlusion and the current world. Keep those tests separate.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> &middot; <a href="installation.html">Installing UE4SS</a> &middot; <a href="first-mod.html">Your first mod</a> &middot; <a href="lua-basics.html">Lua basics for modding</a> &middot; <a href="project-structure.html">Organising a mod</a> &middot; <a href="changelog.html">Changelog</a> &middot; <a href="hooks.html">Working with hooks</a> &middot; <a href="objects.html">Finding game objects</a> &middot; <a href="runtime.html">Timers &amp; cleanup</a> &middot; <a href="data-tables.html">Reading data tables</a> &middot; <a href="debugging.html">Debugging</a> &middot; <a href="performance.html">Performance &amp; profiling</a> &middot; <a href="settings-files.html">Settings &amp; local files</a> &middot; <a href="reflection.html">Reflection, classes &amp; instances</a> &middot; <a href="unreal-types.html">Names, text &amp; soft references</a> &middot; <a href="containers.html">Arrays, sets &amp; maps</a> &middot; <a href="transforms.html">Vectors, rotations &amp; spaces</a> &middot; <a href="player-world.html">Worlds, players &amp; controllers</a> &middot; <a href="object-dumps.html">Reading object dumps</a> &middot; <a href="workshop-inspector.html">Build a weapon inspector</a> &middot; <a href="testing.html">Test a mod step by step</a> &middot; <a href="target-inspector.html">Build a target inspector</a> &middot; <a href="range-lab.html">Plan a runtime range</a> &middot; <a href="weapons.html">Weapon assemblies</a> &middot; <a href="attachments.html">Attachments &amp; rails</a> &middot; <a href="weapon-stats.html">Weapon stats</a> &middot; <a href="ballistics.html">Shots &amp; ballistics</a> &middot; <a href="ammunition.html">Cartridges &amp; projectiles</a> &middot; <a href="reloads.html">Magazines &amp; reloading</a> &middot; <a href="aim-recoil.html">Aiming, cameras &amp; recoil</a> &middot; <a href="targets.html">Finding &amp; tracking targets</a> &middot; <a href="scoring.html">Hits &amp; scoring</a> &middot; <a href="ranges.html">Range menus &amp; travel</a> &middot; <a href="workshop-ui.html">Workshop UI</a> &middot; <a href="progression.html">Ownership &amp; unlocks</a> &middot; <a href="saves.html">Reading &amp; backing up saves</a> &middot; <a href="input-focus.html">Input, focus &amp; cursors</a> &middot; <a href="umg-layout.html">UMG panels &amp; layout</a> &middot; <a href="hud-nameplates.html">HUDs, markers &amp; nameplates</a> &middot; <a href="asset-loading.html">Asset paths &amp; loading</a> &middot; <a href="spawning.html">Spawning &amp; actor ownership</a> &middot; <a href="meshes-materials.html">Meshes, materials &amp; textures</a> &middot; <a href="lighting.html">Lighting &amp; exposure diagnosis</a> &middot; <a href="physics.html">Collision &amp; physics</a> &middot; <a href="audio.html">Weapon audio &amp; spatial sound</a> &middot; <a href="effects.html">Muzzle flashes, tracers &amp; impacts</a> &middot; <a href="multiplayer.html">Multiplayer architecture</a> &middot; <a href="steam.html">Steam sessions &amp; invites</a> &middot; <a href="network-protocol.html">Messages &amp; reliable events</a> &middot; <a href="interpolation.html">Movement interpolation</a> &middot; <a href="clock-sync.html">Clocks, latency &amp; round timing</a> &middot; <a href="chat.html">Chat, names &amp; text validation</a> &middot; <a href="paths.html">Game paths &amp; classes</a> &middot; <a href="custom-content.html">Custom content</a> &middot; <a href="packaging.html">Packaging a Lua mod</a> &middot; <a href="compatibility.html">Checking game updates</a> &middot; <a href="coverage.html">Coverage &amp; testing notes</a> &middot; <a href="tools.html">Tools &amp; resources</a> &middot; <a href="hook-reference.html">Game hook reference</a> &middot; <a href="glossary.html">Modding glossary</a> &middot; <a href="faq.html">Troubleshooting FAQ</a></p></noscript>
+</body>
+</html>

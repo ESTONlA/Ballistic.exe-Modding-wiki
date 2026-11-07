@@ -23,6 +23,7 @@ Write like you’re explaining it to another modder. Get to the steps, use real 
 - Don’t edit `search-index.js` or `dist/` by hand; they’re generated.
 - Give examples their prerequisites, expected result and failure checks. Label fragments with the variables they require; don’t present illustrative output as a captured game test.
 - For code blocks marked `data-example`, edit the matching source under `assets/examples/` and run the build. It syncs those blocks and rebuilds the inspector download. Don’t maintain a second hand-edited copy in the article.
+- Edit the generated hook catalog through `assets/data/observed-hooks.json`. Keep stable entry IDs, exact paths and honest evidence labels. A dump match alone is not a runtime test.
 
 ## Game-specific findings
 

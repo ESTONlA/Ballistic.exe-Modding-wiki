@@ -3,6 +3,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {runInNewContext} from 'node:vm';
 import {packageExample} from './package-example.mjs';
+import {renderHookReference} from './reference.mjs';
 const root=path.resolve(fileURLToPath(new URL('../',import.meta.url)));
 const context={window:{}};
 runInNewContext(await readFile(path.join(root,'assets/js/navigation.js'),'utf8'),context);
@@ -16,11 +17,16 @@ for(const row of navigation){
 }
 const pages=await readdir(path.join(root,'docs'));
 await packageExample(root);
+const hookReference=await renderHookReference(root);
 const entries=[];
 const decode=s=>s.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&');
 const escape=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 for(const name of pages.filter(f=>f.endsWith('.html'))){
- const filename=path.join(root,'docs',name);let html=await readFile(filename,'utf8');
+ const filename=path.join(root,'docs',name);const originalHtml=await readFile(filename,'utf8');let html=originalHtml;
+ if(name==='hook-reference.html'){
+  if(!html.includes('<!-- hook-reference:start -->')||!html.includes('<!-- hook-reference:end -->'))throw Error('Hook reference markers missing');
+  html=html.replace(/<!-- hook-reference:start -->[\s\S]*?<!-- hook-reference:end -->/,()=>'<!-- hook-reference:start -->\n'+hookReference+'\n<!-- hook-reference:end -->');
+ }
  let synced=html;
  for(const match of html.matchAll(/<pre\b[^>]*\bdata-example="([^"]+)"[^>]*><code>[\s\S]*?<\/code><\/pre>/g)){
   if(!/^[A-Za-z0-9_/-]+\.lua$/.test(match[1]))throw Error('Invalid example path');
@@ -28,7 +34,8 @@ for(const name of pages.filter(f=>f.endsWith('.html'))){
   const block=match[0].replace(/<code>[\s\S]*?<\/code>/,()=>'<code>'+escape(source)+'</code>');
   synced=synced.replace(match[0],()=>block);
  }
- if(synced!==html){await writeFile(filename,synced);html=synced;}
+ if(synced!==originalHtml)await writeFile(filename,synced);
+ html=synced;
  const id=html.match(/data-page="([^"]+)"/)?.[1];
  const title=decode(html.match(/<h1>([\s\S]*?)<\/h1>/)?.[1]||'');
  const body=html.match(/<article>([\s\S]*?)<\/article>/)?.[1];
@@ -47,7 +54,12 @@ for(const name of pages.filter(f=>f.endsWith('.html'))){
   if(anchor){const dest=target?await readFile(targetFile,'utf8'):html;if(!dest.includes(`id="${anchor}"`))throw Error(`Missing anchor: ${href}`);}
  }
  const text=decode(body.replace(/<[^>]+>/g,' ')).replace(/\s+/g,' ').trim();
- entries.push({id,title,text});
+ const headings=[...body.matchAll(/<h([23])\b[^>]*\bid="([^"]+)"[^>]*>([\s\S]*?)<\/h\1>/g)];
+ const sections=headings.map((match,index)=>({
+  id:match[2],title:decode(match[3].replace(/<[^>]+>/g,' ')).trim(),
+  text:decode(body.slice(match.index+match[0].length,headings[index+1]?.index??body.length).replace(/<[^>]+>/g,' ')).replace(/\s+/g,' ').trim()
+ }));
+ entries.push({id,title,text,sections});
 }
 if(entries.length!==navigation.length)throw Error('Every navigation entry needs a matching HTML guide');
 entries.sort((a,b)=>navigation.findIndex(p=>p[0]===a.id)-navigation.findIndex(p=>p[0]===b.id));

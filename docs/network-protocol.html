@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Messages &amp; reliable events | Ballistic Modding Wiki</title>
+  <meta name="description" content="Design bounded messages, revisions, acknowledgements and safe event retries.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="network-protocol" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Messages &amp; reliable events</h1><p class="lead">Design bounded messages, revisions, acknowledgements and safe event retries.</p>
+<h2 id="state-events">1. Separate replaceable state from one-time events</h2>
+<p>A new pose can supersede an older pose. A shot, chat message or accepted hit must not be silently replaced by the next packet. Model those as different streams with different retry and deduplication rules.</p><p>The local implementation sends revisioned appearance/state plus acknowledged event streams. Sending everything every tick without identity can appear to work locally while duplicating rewards or losing gun changes under packet loss.</p>
+<h2 id="framing">2. Define byte framing before decoding fields</h2>
+<p>Length-prefixed fields permit text to contain delimiter characters without guessing where a field ends. Count bytes consistently at both ends. Reject an invalid prefix, over-limit length, truncated body, forbidden bytes and unexpected trailing data before touching the engine.</p><pre data-title="Pure Lua single-field teaching decoder, not the full game protocol" data-language="lua"><code>local function decodeOneField(payload, limit)
+    if type(payload) ~= &quot;string&quot; or #payload &gt; limit + 6 then return nil end
+    local colon = payload:find(&quot;:&quot;, 1, true)
+    if not colon or colon &gt; 6 then return nil end
+    local digits = payload:sub(1, colon - 1)
+    if not digits:match(&quot;^%d+$&quot;) then return nil end
+    local count = tonumber(digits)
+    if count &gt; limit then return nil end
+    local body = payload:sub(colon + 1)
+    if #body ~= count or body:find(&quot;\0&quot;, 1, true) then return nil end
+    return body
+end</code></pre><p>A real envelope also needs a version/magic value, the required field count and per-field validation. Do not accept extra fields quietly unless the protocol explicitly defines forward compatibility.</p>
+<h2 id="revisions">3. Distinguish sequence and content revision</h2>
+<p>A snapshot sequence orders snapshots. A gear revision identifies a changed weapon appearance. An acknowledgement says which content/event was accepted. Keeping those concepts separate lets unchanged large gear data stay out of routine pose packets while still retrying a lost gear update.</p><p>If sequence numbers wrap, define a bounded modular “newer” comparison. A simple numerical greater-than test stops working at the wrap boundary. Test duplicate, older and half-range ambiguous inputs explicitly.</p>
+<h2 id="journal">4. Make event application idempotent</h2>
+<p>Give each event an ID within a session/round generation. Apply the next accepted event once, then acknowledge it. A repeated event should confirm the already accepted result without awarding points or playing effects again.</p><p>If an ordered event fails validation or application, decide whether the stream rejects/cancels or waits for recovery. Do not advance acknowledgement past work you did not apply, and do not let an invalid head event block the queue forever without a visible error policy.</p>
+<h2 id="limits">5. Bound queues and values</h2>
+<p>Set maximum payload size, field sizes, pending events, history and retained generations. Validate numeric ranges, finite coordinates, allowed message kinds and known entity IDs. A decoded string is not yet an authorised gameplay action.</p><p>When backpressure occurs, show the user that the connection is catching up or reject the new action. Silently dropping a scored hit is not equivalent to dropping an obsolete cosmetic pose.</p>
+<h2 id="authority">6. Validate the sender and context</h2>
+<p>Bind acknowledgements to the peer/session they belong to. A forged or stale acknowledgement must not retire unrelated pending events. Verify world/round generation and host/guest permissions before applying travel, target or score changes.</p><p>Use allowlisted cue/asset/destination IDs. Never turn a peer-supplied string into arbitrary Lua execution, an unrestricted file path or an unchecked engine object lookup.</p>
+<h2 id="cases">Protocol test cases</h2>
+<ul><li>Encode/decode valid boundary-sized fields.</li><li>Reject truncated, oversized, malformed and trailing data.</li><li>Retry an event after acknowledgement loss without applying it twice.</li><li>Drop stale session/world packets after reconnect/travel.</li><li>Preserve a large appearance revision across lost snapshots.</li><li>Recover or clearly stop when the reliable queue fills.</li></ul>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> &middot; <a href="installation.html">Installing UE4SS</a> &middot; <a href="first-mod.html">Your first mod</a> &middot; <a href="lua-basics.html">Lua basics for modding</a> &middot; <a href="project-structure.html">Organising a mod</a> &middot; <a href="changelog.html">Changelog</a> &middot; <a href="hooks.html">Working with hooks</a> &middot; <a href="objects.html">Finding game objects</a> &middot; <a href="runtime.html">Timers &amp; cleanup</a> &middot; <a href="data-tables.html">Reading data tables</a> &middot; <a href="debugging.html">Debugging</a> &middot; <a href="performance.html">Performance &amp; profiling</a> &middot; <a href="settings-files.html">Settings &amp; local files</a> &middot; <a href="reflection.html">Reflection, classes &amp; instances</a> &middot; <a href="unreal-types.html">Names, text &amp; soft references</a> &middot; <a href="containers.html">Arrays, sets &amp; maps</a> &middot; <a href="transforms.html">Vectors, rotations &amp; spaces</a> &middot; <a href="player-world.html">Worlds, players &amp; controllers</a> &middot; <a href="object-dumps.html">Reading object dumps</a> &middot; <a href="workshop-inspector.html">Build a weapon inspector</a> &middot; <a href="testing.html">Test a mod step by step</a> &middot; <a href="target-inspector.html">Build a target inspector</a> &middot; <a href="range-lab.html">Plan a runtime range</a> &middot; <a href="weapons.html">Weapon assemblies</a> &middot; <a href="attachments.html">Attachments &amp; rails</a> &middot; <a href="weapon-stats.html">Weapon stats</a> &middot; <a href="ballistics.html">Shots &amp; ballistics</a> &middot; <a href="ammunition.html">Cartridges &amp; projectiles</a> &middot; <a href="reloads.html">Magazines &amp; reloading</a> &middot; <a href="aim-recoil.html">Aiming, cameras &amp; recoil</a> &middot; <a href="targets.html">Finding &amp; tracking targets</a> &middot; <a href="scoring.html">Hits &amp; scoring</a> &middot; <a href="ranges.html">Range menus &amp; travel</a> &middot; <a href="workshop-ui.html">Workshop UI</a> &middot; <a href="progression.html">Ownership &amp; unlocks</a> &middot; <a href="saves.html">Reading &amp; backing up saves</a> &middot; <a href="input-focus.html">Input, focus &amp; cursors</a> &middot; <a href="umg-layout.html">UMG panels &amp; layout</a> &middot; <a href="hud-nameplates.html">HUDs, markers &amp; nameplates</a> &middot; <a href="asset-loading.html">Asset paths &amp; loading</a> &middot; <a href="spawning.html">Spawning &amp; actor ownership</a> &middot; <a href="meshes-materials.html">Meshes, materials &amp; textures</a> &middot; <a href="lighting.html">Lighting &amp; exposure diagnosis</a> &middot; <a href="physics.html">Collision &amp; physics</a> &middot; <a href="audio.html">Weapon audio &amp; spatial sound</a> &middot; <a href="effects.html">Muzzle flashes, tracers &amp; impacts</a> &middot; <a href="multiplayer.html">Multiplayer architecture</a> &middot; <a href="steam.html">Steam sessions &amp; invites</a> &middot; <a href="network-protocol.html">Messages &amp; reliable events</a> &middot; <a href="interpolation.html">Movement interpolation</a> &middot; <a href="clock-sync.html">Clocks, latency &amp; round timing</a> &middot; <a href="chat.html">Chat, names &amp; text validation</a> &middot; <a href="paths.html">Game paths &amp; classes</a> &middot; <a href="custom-content.html">Custom content</a> &middot; <a href="packaging.html">Packaging a Lua mod</a> &middot; <a href="compatibility.html">Checking game updates</a> &middot; <a href="coverage.html">Coverage &amp; testing notes</a> &middot; <a href="tools.html">Tools &amp; resources</a> &middot; <a href="hook-reference.html">Game hook reference</a> &middot; <a href="glossary.html">Modding glossary</a> &middot; <a href="faq.html">Troubleshooting FAQ</a></p></noscript>
+</body>
+</html>

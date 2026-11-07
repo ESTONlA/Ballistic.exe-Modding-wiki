@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 1,
+  "source": "Local UE4SS object dump and separately recorded demo integration checks. Not a live SDK or full-game API guarantee.",
+  "entries": [
+    {
+      "id": "mount-lookup",
+      "title": "GetCompatibleMountsRecursive",
+      "scope": "Workbench",
+      "path": "/Game/UI/HUD/Workshop/BunkerHUDItems/Attach_POI.Attach_POI_C:GetCompatibleMountsRecursive",
+      "evidence": "recorded",
+      "role": "Mount-compatibility lookup used by the expanded attachment-list integration.",
+      "signature": "Mounts and an output name array; inspect wrapper/output semantics.",
+      "notes": "Recorded lookup expansion and menu checks do not validate every possible assembly."
+    },
+    {
+      "id": "popup",
+      "title": "OnGetUserMenuContent",
+      "scope": "Workbench",
+      "path": "/Game/UI/HUD/Workshop/BunkerHUDItems/Attach_POI.Attach_POI_C:OnGetUserMenuContent",
+      "evidence": "recorded",
+      "role": "Attachment popup construction path.",
+      "signature": "Widget return value in the schema; recorded Blueprint post callback did not supply it as first expected.",
+      "notes": "The local tab code used the stored AttachmentsList property instead."
+    },
+    {
+      "id": "fit-remove",
+      "title": "SetupAttachment",
+      "scope": "Workbench",
+      "path": "/Game/UI/HUD/Workshop/BunkerHUDItems/Attach_POI.Attach_POI_C:SetupAttachment",
+      "evidence": "recorded",
+      "role": "Fit an attachment class or take the native removal path.",
+      "signature": "Attachment is a class reference; nil removed the test child.",
+      "notes": "Synthetic removal/batch fixtures passed; all real saved assemblies were not covered."
+    },
+    {
+      "id": "editor-refresh",
+      "title": "UpdateWeaponEditDisplay",
+      "scope": "Workbench",
+      "path": "/Game/UI/HUD/Workshop/BunkerHUDItems/WeaponEditMOde.WeaponEditMOde_C:UpdateWeaponEditDisplay",
+      "evidence": "recorded",
+      "role": "Editor refresh point used by control-lifecycle code.",
+      "signature": "Context observed; inspect full current signature before using additional inputs.",
+      "notes": "A refresh can rebuild point/widget references."
+    },
+    {
+      "id": "edit-enter",
+      "title": "EnterWeaponEditMode",
+      "scope": "Workbench",
+      "path": "/Game/UI/HUD/Workshop/HUD_Workshop.HUD_Workshop_C:EnterWeaponEditMode",
+      "evidence": "recorded",
+      "role": "HUD edit-mode entry lifecycle.",
+      "signature": "Context observed; this catalog does not reconstruct all inputs.",
+      "notes": "Used to align custom control visibility with the actual mode."
+    },
+    {
+      "id": "edit-leave",
+      "title": "LeaveWeaponEditMode",
+      "scope": "Workbench",
+      "path": "/Game/UI/HUD/Workshop/HUD_Workshop.HUD_Workshop_C:LeaveWeaponEditMode",
+      "evidence": "recorded",
+      "role": "HUD edit-mode exit lifecycle.",
+      "signature": "Context observed; inspect the current owning class/signature.",
+      "notes": "Pending context-dependent actions must cancel on exit."
+    },
+    {
+      "id": "characteristics",
+      "title": "UpdateCharacteristicsFromParts",
+      "scope": "Weapons",
+      "path": "/Game/BlueprintLogic/Weapons/A_WeaponBase.A_WeaponBase_C:UpdateCharacteristicsFromParts",
+      "evidence": "recorded",
+      "role": "Recalculate selected groups of derived characteristics.",
+      "signature": "Nine booleans: Weight, Ergo, CenterMassLoc, Recoil, GripCenter, BarrelLength, EquippedScopeAndLaser, Cooling, TotalLength.",
+      "notes": "A mutating gameplay recalculation, not simply a redraw call."
+    },
+    {
+      "id": "fired",
+      "title": "ProcessBulletFired",
+      "scope": "Weapons",
+      "path": "/Game/BlueprintLogic/Weapons/A_WeaponBase.A_WeaponBase_C:ProcessBulletFired",
+      "evidence": "recorded",
+      "role": "Firing event used for shot identity and projectile capture.",
+      "signature": "Cartridge, two recoil forces, recoil location/direction, Barrel, PowderAmount, ExitPressure, PowderType, Bullet array.",
+      "notes": "Hook resolution/local native integration does not prove every real-peer firing scenario."
+    },
+    {
+      "id": "impact",
+      "title": "RegisterHit",
+      "scope": "Ballistics",
+      "path": "/Script/Ballistic.C_BulletBase:RegisterHit",
+      "evidence": "recorded",
+      "role": "Bullet-level impact entry used by local impact capture.",
+      "signature": "ImpactInfo struct; copy needed ordinary values within the callback.",
+      "notes": "An impact is not automatically an accepted scoring target hit."
+    },
+    {
+      "id": "energy",
+      "title": "CurrentEnergyInJoules",
+      "scope": "Ballistics",
+      "path": "/Script/Ballistic.C_BulletBase:CurrentEnergyInJoules",
+      "evidence": "dump",
+      "role": "An energy-named native function with a surface-type input, discovered in the schema.",
+      "signature": "SurfaceType enum input and a float return in the inspected dump; verify the enum domain before calling.",
+      "notes": "Not a proven zero-argument raw-energy getter or a recovered ballistic formula; no fresh runtime call in this documentation pass."
+    },
+    {
+      "id": "target-hit",
+      "title": "TargetBase Hit",
+      "scope": "Targets",
+      "path": "/Game/BlueprintLogic/Targets/TargetBase.TargetBase_C:Hit",
+      "evidence": "recorded",
+      "role": "Target-side path used to connect a bullet to the target.",
+      "signature": "Observed capture uses impact info, player, velocity, stance and bullet context; confirm exact current names/types.",
+      "notes": "Keep attribution separate from the valid-hit award decision."
+    },
+    {
+      "id": "target-result",
+      "title": "TargetBase OnHit",
+      "scope": "Targets",
+      "path": "/Game/BlueprintLogic/Targets/TargetBase.TargetBase_C:OnHit",
+      "evidence": "recorded",
+      "role": "Valid-hit result and target/reward-related flags.",
+      "signature": "ValidHit, Player, ImpactInfo, HitEnergy, HitVelocity, TriggeredBonus, TriggeredCartUnlock, BreakingHit.",
+      "notes": "Replaying reward paths for remote cosmetics can duplicate progression."
+    },
+    {
+      "id": "character-hit",
+      "title": "CharacterTargetBase Hit",
+      "scope": "Targets",
+      "path": "/Game/BlueprintLogic/Targets/CharacterTargets/CharacterTargetBase.CharacterTargetBase_C:Hit",
+      "evidence": "recorded",
+      "role": "Character-target attribution path.",
+      "signature": "Inspect the current derived-class signature; do not assume one base callback covers every class.",
+      "notes": "Deduplicate if a single action reaches more than one observed handler."
+    },
+    {
+      "id": "character-result",
+      "title": "CharacterTargetBase OnHit",
+      "scope": "Targets",
+      "path": "/Game/BlueprintLogic/Targets/CharacterTargets/CharacterTargetBase.CharacterTargetBase_C:OnHit",
+      "evidence": "recorded",
+      "role": "Character-target result path.",
+      "signature": "The inspected result has validity/player/impact/energy/velocity/bonus/unlock/breaking fields.",
+      "notes": "Local native callback checks are narrower than universal target support."
+    },
+    {
+      "id": "mag-release",
+      "title": "ReleaseMagazine",
+      "scope": "Handling",
+      "path": "/Game/BlueprintLogic/Weapons/A_WeaponBase.A_WeaponBase_C:ReleaseMagazine",
+      "evidence": "recorded",
+      "role": "Weapon-level handling capture entry.",
+      "signature": "Weapon context is used; confirm remaining signature in the current build.",
+      "notes": "Do not count every related class release function as a distinct reload."
+    },
+    {
+      "id": "mag-insert",
+      "title": "OnSnappedToSlot",
+      "scope": "Handling",
+      "path": "/Game/BlueprintLogic/Weapons/Parts/Base_BoxMagazine.Base_BoxMagazine_C:OnSnappedToSlot",
+      "evidence": "recorded",
+      "role": "Magazine insertion/snapping capture entry.",
+      "signature": "Part context is used with a validated ParentWeapon reference.",
+      "notes": "A cosmetic reload event is not proof every inventory/feed operation completed."
+    },
+    {
+      "id": "aim",
+      "title": "SetAiming",
+      "scope": "Handling",
+      "path": "/Game/BlueprintLogic/Weapons/A_WeaponBase.A_WeaponBase_C:SetAiming",
+      "evidence": "dump",
+      "role": "Weapon-base aiming entry point.",
+      "signature": "NewAiming boolean observed in the schema.",
+      "notes": "Do not assume calling it alone reproduces the pawn/camera/stance flow."
+    },
+    {
+      "id": "current-ergo",
+      "title": "GetCurrentErgo",
+      "scope": "Weapons",
+      "path": "/Script/Ballistic.C_WeaponPart:GetCurrentErgo",
+      "evidence": "dump",
+      "role": "Part-level ergonomics getter name in the native schema.",
+      "signature": "Float return observed.",
+      "notes": "Part getter, current weapon total and installed total are different references."
+    },
+    {
+      "id": "range-list",
+      "title": "PreConstruct",
+      "scope": "Range UI",
+      "path": "/Game/UI/Menus/RangeSelectionMenu/RangeList.RangeList_C:PreConstruct",
+      "evidence": "recorded",
+      "role": "Range-list construction integration point.",
+      "signature": "Inspect the actual loaded class and current preconstruct signature.",
+      "notes": "A visible card does not prove its destination map is usable."
+    },
+    {
+      "id": "range-selected",
+      "title": "SetSelected",
+      "scope": "Range UI",
+      "path": "/Game/UI/Menus/MenuItems/RangeListItem.RangeListItem_C:SetSelected",
+      "evidence": "recorded",
+      "role": "Range-card selection integration point.",
+      "signature": "Selection/context observed; verify current inputs before writing selection.",
+      "notes": "Recorded custom-card work eventually opened the existing pool world."
+    }
+  ]
+}

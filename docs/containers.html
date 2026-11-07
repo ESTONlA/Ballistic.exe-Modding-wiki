@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Arrays, sets &amp; maps | Ballistic Modding Wiki</title>
+  <meta name="description" content="Read Unreal arrays, sets and maps without confusing them with ordinary Lua tables.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="containers" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Arrays, sets &amp; maps</h1><p class="lead">Read Unreal arrays, sets and maps without confusing them with ordinary Lua tables.</p>
+<h2 id="identify-container">1. Identify the container first</h2>
+<p>An ordinary Lua table and a reflected Unreal container can look similar in a short snippet while supporting different operations. Read the field type from the dump before choosing an iterator. The local PurchasedParts field is a set, UnlockedRanges is an array, and SavedWeaponTemplates is a map.</p><div class="table-scroll"><table><thead><tr><th>Container</th><th>Question it answers</th></tr></thead><tbody><tr><td>Array / TArray</td><td>What is at this index, in this ordered collection?</td></tr><tr><td>Set / TSet</td><td>Does this typed value belong to the collection?</td></tr><tr><td>Map / TMap</td><td>Which value is associated with this typed key?</td></tr><tr><td>Plain Lua table</td><td>What state did my script construct itself?</td></tr></tbody></table></div>
+<h2 id="index-bases">2. Don’t mix index bases</h2>
+<p>The tested UE4SS array wrappers in these guides used numeric indices starting at one. UMG panel methods such as GetChildAt used zero-based indices. C++ examples also commonly use zero-based array indexing. Copy the convention belonging to the actual API rather than assuming a language-wide rule.</p><pre data-title="Context: valid points/panel, read-only loops" data-language="lua"><code>-- A tested reflected-array pattern:
+for i = 1, #points do
+    local point = points[i]
+    -- Validate point before using it.
+end
+
+-- A UMG panel method pattern:
+for i = 0, panel:GetChildrenCount() - 1 do
+    local widget = panel:GetChildAt(i)
+    -- Validate widget before using it.
+end</code></pre>
+<h2 id="bound-iteration">3. Bound discovery and report truncation</h2>
+<p>The original attachment/range investigation found that ipairs on a particular Unreal wrapper could continue past the reported length. Numeric iteration using the reported count avoided that failure. This is a recorded binding-specific result, not a claim that ipairs is broken on Lua tables.</p><p>A diagnostic can print the first twelve items and say the rest were omitted. A clear-all feature cannot silently process twelve and report that everything was removed. Decide whether an excessive count causes a stop, a visible partial result or a bounded multi-step job.</p>
+<h2 id="mutation">4. Reacquire after mutation</h2>
+<p>Removing a child part can rebuild the menu’s array of POI widgets. Iterating the old array after the native action may use stale references. Perform one action, let the refresh happen, then acquire the new collection before continuing.</p><p>Copying every element into a Lua list does not necessarily solve lifetime: those elements may still point at native widgets that were just destroyed. Copy plain identifiers for your plan and resolve live objects at the moment of the next action.</p>
+<h2 id="membership">5. Match set and map key types</h2>
+<p>A set of soft class references requires the representation expected by its binding. A string that prints like the class path and a loaded UClass are not automatically equivalent keys. Start with a known contained value and a known absent value; inspect result and stability independently.</p><p>Map enumeration can also be loader-specific. Don’t publish a generic pairs call over a reflected map just because it works on your own Lua dictionary. Use the supported API for your loader and keep a small native fixture for sensitive membership operations.</p>
+<h2 id="debug-record">A useful container debug record</h2>
+<pre data-title="Record before changing a whole UI catalog" data-language="text"><code>field / owner:
+reflected container type:
+key or element type:
+reported count:
+iteration method and index base:
+sample values:
+operation that may rebuild the owner:
+positive / negative membership results:</code></pre><p>If the process freezes rather than throwing a Lua error, inspect unbounded iteration and recursion before adding another error handler. For the actual failed ownership filters, see <a href="progression.html">the ownership guide</a>.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> &middot; <a href="installation.html">Installing UE4SS</a> &middot; <a href="first-mod.html">Your first mod</a> &middot; <a href="lua-basics.html">Lua basics for modding</a> &middot; <a href="project-structure.html">Organising a mod</a> &middot; <a href="changelog.html">Changelog</a> &middot; <a href="hooks.html">Working with hooks</a> &middot; <a href="objects.html">Finding game objects</a> &middot; <a href="runtime.html">Timers &amp; cleanup</a> &middot; <a href="data-tables.html">Reading data tables</a> &middot; <a href="debugging.html">Debugging</a> &middot; <a href="performance.html">Performance &amp; profiling</a> &middot; <a href="settings-files.html">Settings &amp; local files</a> &middot; <a href="reflection.html">Reflection, classes &amp; instances</a> &middot; <a href="unreal-types.html">Names, text &amp; soft references</a> &middot; <a href="containers.html">Arrays, sets &amp; maps</a> &middot; <a href="transforms.html">Vectors, rotations &amp; spaces</a> &middot; <a href="player-world.html">Worlds, players &amp; controllers</a> &middot; <a href="object-dumps.html">Reading object dumps</a> &middot; <a href="workshop-inspector.html">Build a weapon inspector</a> &middot; <a href="testing.html">Test a mod step by step</a> &middot; <a href="target-inspector.html">Build a target inspector</a> &middot; <a href="range-lab.html">Plan a runtime range</a> &middot; <a href="weapons.html">Weapon assemblies</a> &middot; <a href="attachments.html">Attachments &amp; rails</a> &middot; <a href="weapon-stats.html">Weapon stats</a> &middot; <a href="ballistics.html">Shots &amp; ballistics</a> &middot; <a href="ammunition.html">Cartridges &amp; projectiles</a> &middot; <a href="reloads.html">Magazines &amp; reloading</a> &middot; <a href="aim-recoil.html">Aiming, cameras &amp; recoil</a> &middot; <a href="targets.html">Finding &amp; tracking targets</a> &middot; <a href="scoring.html">Hits &amp; scoring</a> &middot; <a href="ranges.html">Range menus &amp; travel</a> &middot; <a href="workshop-ui.html">Workshop UI</a> &middot; <a href="progression.html">Ownership &amp; unlocks</a> &middot; <a href="saves.html">Reading &amp; backing up saves</a> &middot; <a href="input-focus.html">Input, focus &amp; cursors</a> &middot; <a href="umg-layout.html">UMG panels &amp; layout</a> &middot; <a href="hud-nameplates.html">HUDs, markers &amp; nameplates</a> &middot; <a href="asset-loading.html">Asset paths &amp; loading</a> &middot; <a href="spawning.html">Spawning &amp; actor ownership</a> &middot; <a href="meshes-materials.html">Meshes, materials &amp; textures</a> &middot; <a href="lighting.html">Lighting &amp; exposure diagnosis</a> &middot; <a href="physics.html">Collision &amp; physics</a> &middot; <a href="audio.html">Weapon audio &amp; spatial sound</a> &middot; <a href="effects.html">Muzzle flashes, tracers &amp; impacts</a> &middot; <a href="multiplayer.html">Multiplayer architecture</a> &middot; <a href="steam.html">Steam sessions &amp; invites</a> &middot; <a href="network-protocol.html">Messages &amp; reliable events</a> &middot; <a href="interpolation.html">Movement interpolation</a> &middot; <a href="clock-sync.html">Clocks, latency &amp; round timing</a> &middot; <a href="chat.html">Chat, names &amp; text validation</a> &middot; <a href="paths.html">Game paths &amp; classes</a> &middot; <a href="custom-content.html">Custom content</a> &middot; <a href="packaging.html">Packaging a Lua mod</a> &middot; <a href="compatibility.html">Checking game updates</a> &middot; <a href="coverage.html">Coverage &amp; testing notes</a> &middot; <a href="tools.html">Tools &amp; resources</a> &middot; <a href="hook-reference.html">Game hook reference</a> &middot; <a href="glossary.html">Modding glossary</a> &middot; <a href="faq.html">Troubleshooting FAQ</a></p></noscript>
+</body>
+</html>
