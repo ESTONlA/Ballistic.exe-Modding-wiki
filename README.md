@@ -1,11 +1,13 @@
 # Ballistic Modding Wiki
 
 [![Game coverage: approximately 10%](https://img.shields.io/badge/Game_coverage-~10%25-5b8def?style=for-the-badge&labelColor=20232a)](docs/coverage.html)
-[![25 guides](https://img.shields.io/badge/Guides-25-5b8def?style=for-the-badge&labelColor=20232a)](docs/introduction.html#guide-index)
+[![30 guides](https://img.shields.io/badge/Guides-30-5b8def?style=for-the-badge&labelColor=20232a)](docs/introduction.html#guide-index)
 
 Setup notes, Lua guides and game references for modding Ballistic.exe.
 
-There are 25 guides now, including weapons, attachments, stats, shot/hit events, targets, scoring, workshop UI, ranges, saves and multiplayer architecture. The [coverage page](docs/coverage.html) lists what’s covered and what still needs research. The percentage is still a rough estimate, not an audited count of the whole game.
+There are 30 guides, including step-by-step walkthroughs for Lua, weapons, attachments, stats, shot/hit events, targets, scoring, workshop UI, ranges, saves and multiplayer architecture. The [coverage page](docs/coverage.html) lists what’s covered and what still needs research. The percentage is still a rough estimate, not an audited count of the whole game.
+
+Start with [your first mod](docs/first-mod.html), learn the [Lua basics](docs/lua-basics.html), then [build a read-only weapon inspector](docs/workshop-inspector.html). The inspector includes all four Lua files and a downloadable example. Follow [the testing guide](docs/testing.html) to check your own result.
 
 New pages, corrections and site changes go in the [changelog](docs/changelog.html).
 
@@ -29,6 +31,8 @@ assets/js/navigation.js Page titles, order and sidebar groups
 assets/js/theme.js      Applies the saved theme before rendering
 assets/js/search-index.js
                         Generated search data
+assets/examples/        Source files for downloadable teaching examples
+assets/downloads/       Example archives rebuilt with the site
 tools/build.mjs         Checks links and builds the site
 tools/serve.mjs         Local preview server
 .github/workflows/      Manual GitHub Pages deployment
@@ -47,6 +51,8 @@ npm run check
 ```
 
 This checks the JavaScript, local links and heading anchors, updates search, and puts the finished site in `dist/`.
+
+For the inspector example, edit the Lua files in `assets/examples/WorkshopInspector/Scripts/`. The build updates the guide’s matching code blocks and rebuilds the six-file example archive, so the displayed code and download stay together.
 
 ## GitHub Pages
 

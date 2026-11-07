@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Test a mod step by step | Ballistic Modding Wiki</title>
+  <meta name="description" content="Build a repeatable test plan that separates language, engine, gameplay and real-peer checks.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="testing" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Test a mod step by step</h1><p class="lead">Prove the smallest claim first, then test the actual player workflow.</p>
+<h2 id="write-the-claim">1. Write a concrete claim</h2><p>“Works” is too broad to test. Use a trigger and an observable result: “Removing the foregrip restores the installed-ergo baseline,” or “Closing the attachment editor hides the added button.”</p><p>Write the expected result before changing the code. For a stat issue, a negative final value is not enough; compare it with the same assembly’s starting value.</p>
+<h2 id="record-the-environment">2. Record the environment</h2>
+<pre data-title="A useful bug report template" data-language="text"><code>Game / build:
+UE4SS version / commit:
+Mod version / archive checksum:
+Other enabled mods:
+Map and menu:
+Weapon / rail / attachment class:
+Reproduction steps:
+Expected result:
+Observed result:
+Relevant log excerpt:</code></pre>
+<p>Use exact class or display names where possible. Save a fresh log after reproducing, not a file from last week. Remove personal paths and network IDs before posting it publicly.</p>
+<h2 id="pure-lua-checks">3. Check pure Lua logic</h2><p>Configuration validation, pagination boundaries, score deduplication and packet parsing can often be tested without Unreal objects. Give them ordinary values and assert the returned result.</p>
+<pre data-title="A tiny pure Lua duplicate-event check" data-language="lua"><code>local seen = {}
+local function accept(id)
+    if seen[id] then return false end
+    seen[id] = true
+    return true
+end
+
+assert(accept(&quot;round1:shot1&quot;) == true)
+assert(accept(&quot;round1:shot1&quot;) == false)
+assert(accept(&quot;round1:shot2&quot;) == true)</code></pre>
+<p>A mock can establish that your callback releases a busy flag after a Lua error. It cannot establish that an engine object is safe to dereference. State the distinction in the result.</p>
+<h2 id="native-fixtures">4. Use native fixtures for engine behaviour</h2><p>A native fixture uses actual engine objects with controlled ownership. For a child-actor removal test, create a disposable component and point the test widget at it rather than touching the player’s saved gun.</p><p>Keep a list of every actor, widget, hook and temporary file the fixture owns. Clean those up on success and on Lua failure. Do not stop an unrelated game process or alter another mod’s configuration as an unrecorded side effect.</p>
+<h2 id="actual-workflow">5. Test the actual workflow</h2><ol><li>Open the normal menu the player uses.</li><li>Trigger the action through its real input path.</li><li>Repeat it after the UI rebuilds.</li><li>Change the weapon or close the menu while work is pending.</li><li>Travel and come back.</li><li>For a persisted change, restart and load a disposable save.</li></ol><p>A widget created by code can pass construction checks while still being off-screen or blocked by another panel. The real input path is a separate check.</p>
+<h2 id="multiplayer-matrix">6. Add a two-PC matrix</h2>
+<div class="table-scroll"><table><thead><tr><th>Scenario</th><th>Check on both screens</th></tr></thead><tbody><tr><td>Both fire at once</td><td>Two distinct shot IDs and correct owner attribution.</td></tr><tr><td>Same target hit</td><td>No duplicate reward; consistent final target state.</td></tr><tr><td>Switch guns</td><td>Correct model and handling state; no orphaned meshes.</td></tr><tr><td>Restart / repeated travel</td><td>Both arrive with usable loadouts and reset registries.</td></tr><tr><td>Disconnect near round end</td><td>Clear cancellation or recovery; no old result applied.</td></tr><tr><td>Save snapshot</td><td>Consent, backup and successful reload on a disposable guest profile.</td></tr></tbody></table></div>
+<p>Use separate Steam accounts and real peers for this stage. Simulated packet delay is useful for repeatability, but it is not a replacement for an actual session.</p>
+<h2 id="write-the-result">7. Write the result narrowly</h2><p>Record what ran, what passed, what failed and what the test did not cover. “Ten synthetic removals returned to baseline” is useful. “All attachment bugs fixed” does not follow from it.</p><p>Once the relevant checks pass, save the tested artifact and its checksum. Re-run checks when code or an unresolved concern justifies it; repeating the same successful simulation does not broaden its scope.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> &middot; <a href="installation.html">Installing UE4SS</a> &middot; <a href="first-mod.html">Your first mod</a> &middot; <a href="lua-basics.html">Lua basics for modding</a> &middot; <a href="project-structure.html">Organising a mod</a> &middot; <a href="changelog.html">Changelog</a> &middot; <a href="hooks.html">Working with hooks</a> &middot; <a href="objects.html">Finding game objects</a> &middot; <a href="runtime.html">Timers &amp; cleanup</a> &middot; <a href="data-tables.html">Reading data tables</a> &middot; <a href="debugging.html">Debugging</a> &middot; <a href="performance.html">Performance &amp; profiling</a> &middot; <a href="workshop-inspector.html">Build a weapon inspector</a> &middot; <a href="testing.html">Test a mod step by step</a> &middot; <a href="weapons.html">Weapon assemblies</a> &middot; <a href="attachments.html">Attachments &amp; rails</a> &middot; <a href="weapon-stats.html">Weapon stats</a> &middot; <a href="ballistics.html">Shots &amp; ballistics</a> &middot; <a href="targets.html">Finding &amp; tracking targets</a> &middot; <a href="scoring.html">Hits &amp; scoring</a> &middot; <a href="ranges.html">Range menus &amp; travel</a> &middot; <a href="workshop-ui.html">Workshop UI</a> &middot; <a href="progression.html">Ownership &amp; unlocks</a> &middot; <a href="saves.html">Reading &amp; backing up saves</a> &middot; <a href="multiplayer.html">Multiplayer architecture</a> &middot; <a href="paths.html">Game paths &amp; classes</a> &middot; <a href="custom-content.html">Custom content</a> &middot; <a href="packaging.html">Packaging a Lua mod</a> &middot; <a href="compatibility.html">Checking game updates</a> &middot; <a href="coverage.html">Coverage &amp; testing notes</a> &middot; <a href="tools.html">Tools &amp; resources</a></p></noscript>
+</body>
+</html>

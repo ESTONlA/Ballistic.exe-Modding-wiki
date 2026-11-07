@@ -21,6 +21,8 @@ Write like you’re explaining it to another modder. Get to the steps, use real 
 - Keep styles in the CSS file and shared behaviour in JavaScript.
 - When adding a page, add its filename, title and group to `assets/js/navigation.js`. The build checks that the page and navigation agree, then rebuilds search.
 - Don’t edit `search-index.js` or `dist/` by hand; they’re generated.
+- Give examples their prerequisites, expected result and failure checks. Label fragments with the variables they require; don’t present illustrative output as a captured game test.
+- For code blocks marked `data-example`, edit the matching source under `assets/examples/` and run the build. It syncs those blocks and rebuilds the inspector download. Don’t maintain a second hand-edited copy in the article.
 
 ## Game-specific findings
 

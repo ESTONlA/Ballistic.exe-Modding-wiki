@@ -121,10 +121,28 @@
     if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openSearch(); }
     if(e.key === '/' && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName) && !document.activeElement.isContentEditable) { e.preventDefault(); openSearch(); }
   });
-  if ('IntersectionObserver' in window) {
-    const observer = new IntersectionObserver(entries => entries.forEach(entry => {
-      if(entry.isIntersecting)document.querySelectorAll('.page-toc a').forEach(a => a.classList.toggle('active',a.hash === `#${entry.target.id}`));
-    }),{rootMargin:'-80px 0px -65% 0px'});
-    headings.forEach(h => observer.observe(h));
+  const tocLinks = [...document.querySelectorAll('.page-toc nav a, .page-toc > a')];
+  let tocQueued = false, activeHeading = '';
+  function updateToc() {
+    tocQueued = false;
+    if (!headings.length) return;
+    let current = headings[0];
+    for (const heading of headings) {
+      if (heading.getBoundingClientRect().top <= 135) current = heading;
+      else break;
+    }
+    if (scrollY + innerHeight >= document.documentElement.scrollHeight - 2) current = headings[headings.length - 1];
+    if (activeHeading === current.id) return;
+    activeHeading = current.id;
+    tocLinks.forEach(a => a.classList.toggle('active',a.hash === `#${activeHeading}`));
   }
+  function queueTocUpdate() {
+    if (tocQueued) return;
+    tocQueued = true;
+    requestAnimationFrame(updateToc);
+  }
+  window.addEventListener('scroll',queueTocUpdate,{passive:true});
+  window.addEventListener('resize',queueTocUpdate);
+  window.addEventListener('hashchange',queueTocUpdate);
+  queueTocUpdate();
 })();

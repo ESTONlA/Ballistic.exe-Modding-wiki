@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Organising a mod | Ballistic Modding Wiki</title>
+  <meta name="description" content="Split scripts into modules, validate configuration and keep runtime state separate.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="project-structure" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Organising a mod</h1><p class="lead">Keep startup, settings, engine access and feature state in separate places.</p>
+<h2 id="start-with-responsibilities">1. Decide what each file owns</h2><p>For a small feature, four files are often enough. This is a practical starting point rather than a rule that every function needs its own module.</p>
+<div class="table-scroll"><table><thead><tr><th>File</th><th>Responsibility</th></tr></thead><tbody><tr><td><code>main.lua</code></td><td>Validate startup settings and register callbacks once.</td></tr><tr><td><code>config.lua</code></td><td>Return defaults a user can edit with the game closed.</td></tr><tr><td><code>log.lua</code></td><td>Provide a consistent message prefix.</td></tr><tr><td><code>inspect.lua</code></td><td>Read engine state and return a result.</td></tr></tbody></table></div>
+<p>The <a href="workshop-inspector.html">weapon inspector walkthrough</a> uses exactly this layout. For a larger mod, group related modules under folders such as <code>ui/</code> and <code>gameplay/</code> rather than growing main.lua into every subsystem.</p>
+<h2 id="return-a-module">2. Return a module</h2>
+<pre data-title="A module that creates independent state" data-language="lua"><code>-- Scripts/counter.lua
+local Counter = {}
+
+function Counter.create()
+    local state = {value = 0}
+    function state:add(amount)
+        self.value = self.value + amount
+    end
+    return state
+end
+
+return Counter</code></pre>
+<pre data-title="Use from Scripts/main.lua" data-language="lua"><code>local Counter = require(&quot;counter&quot;)
+local first = Counter.create()
+local second = Counter.create()
+first:add(2)
+print(first.value .. &quot;, &quot; .. second.value .. &quot;\n&quot;)</code></pre>
+<p>The output should be <code>2, 0</code>. Returning a constructor lets two features have separate state without copying module code. Keep the module’s public operations small; callers shouldn’t need to reach into every internal field.</p>
+<h2 id="validate-settings">3. Validate settings before registering work</h2>
+<pre data-title="Fail early for invalid settings" data-language="lua"><code>local Config = require(&quot;config&quot;)
+assert(type(Config.Enabled) == &quot;boolean&quot;, &quot;Enabled must be a boolean&quot;)
+assert(type(Config.MaxParts) == &quot;number&quot;, &quot;MaxParts must be a number&quot;)
+assert(Config.MaxParts % 1 == 0, &quot;MaxParts must be an integer&quot;)
+assert(Config.MaxParts &gt;= 1 and Config.MaxParts &lt;= 64,
+    &quot;MaxParts must be from 1 to 64&quot;)</code></pre>
+<p>Explain each setting in the installation guide and pick bounded defaults. A typo should produce a useful log message, not an enormous actor loop or an unexplained half-initialised feature.</p><p>Do not store live actor or widget objects in a user configuration file. A persisted preference can survive travel; a world-owned object usually cannot.</p>
+<h2 id="avoid-circular-requires">4. Keep dependencies one-way</h2><p>Have main.lua import the feature module and supply configuration. Avoid a feature importing main.lua to ask for a value while main.lua is still loading that feature. Pass a callback or state object instead.</p><p><code>require</code> normally caches a loaded module within its Lua environment. Editing a module on disk does not prove that a running instance has reloaded it. Use the full restart workflow that was validated for your loader, and log a version string to identify the code actually running.</p>
+<h2 id="world-state-versus-settings">5. Separate three kinds of state</h2><ul><li><strong>Configuration:</strong> user choices, limits and feature switches.</li><li><strong>Session state:</strong> a custom round, network epoch or queued action.</li><li><strong>World state:</strong> controllers, actors, widgets and cached components.</li></ul><p>A single “reset everything” function can erase preferences unnecessarily. Reset world caches on travel, cancel actions when their context changes, and reset round scores only when the round flow calls for it.</p>
+<h2 id="file-layout-and-names">6. Keep names portable</h2><p>Use consistent filename casing and relative module names. Avoid a personal absolute install path inside a shared script. Keep mod-owned data under a deliberate data directory, not the current working directory by accident.</p><p>If you change a module’s name, update its requires and the release archive’s explicit file list together. Test an upgrade from the old release: a removed module left on disk can mask a packaging mistake.</p>
+<h2 id="check-the-refactor">Check the refactor</h2><ol><li>Confirm the same startup message appears once.</li><li>Trigger the feature and compare behaviour with the previous version.</li><li>Use an invalid setting and check the diagnostic.</li><li>Disable the feature and confirm no action callback is registered.</li><li>Restart after removing an obsolete module to confirm nothing secretly depends on it.</li></ol>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> &middot; <a href="installation.html">Installing UE4SS</a> &middot; <a href="first-mod.html">Your first mod</a> &middot; <a href="lua-basics.html">Lua basics for modding</a> &middot; <a href="project-structure.html">Organising a mod</a> &middot; <a href="changelog.html">Changelog</a> &middot; <a href="hooks.html">Working with hooks</a> &middot; <a href="objects.html">Finding game objects</a> &middot; <a href="runtime.html">Timers &amp; cleanup</a> &middot; <a href="data-tables.html">Reading data tables</a> &middot; <a href="debugging.html">Debugging</a> &middot; <a href="performance.html">Performance &amp; profiling</a> &middot; <a href="workshop-inspector.html">Build a weapon inspector</a> &middot; <a href="testing.html">Test a mod step by step</a> &middot; <a href="weapons.html">Weapon assemblies</a> &middot; <a href="attachments.html">Attachments &amp; rails</a> &middot; <a href="weapon-stats.html">Weapon stats</a> &middot; <a href="ballistics.html">Shots &amp; ballistics</a> &middot; <a href="targets.html">Finding &amp; tracking targets</a> &middot; <a href="scoring.html">Hits &amp; scoring</a> &middot; <a href="ranges.html">Range menus &amp; travel</a> &middot; <a href="workshop-ui.html">Workshop UI</a> &middot; <a href="progression.html">Ownership &amp; unlocks</a> &middot; <a href="saves.html">Reading &amp; backing up saves</a> &middot; <a href="multiplayer.html">Multiplayer architecture</a> &middot; <a href="paths.html">Game paths &amp; classes</a> &middot; <a href="custom-content.html">Custom content</a> &middot; <a href="packaging.html">Packaging a Lua mod</a> &middot; <a href="compatibility.html">Checking game updates</a> &middot; <a href="coverage.html">Coverage &amp; testing notes</a> &middot; <a href="tools.html">Tools &amp; resources</a></p></noscript>
+</body>
+</html>

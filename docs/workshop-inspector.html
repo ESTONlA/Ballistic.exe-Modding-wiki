@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Build a weapon inspector | Ballistic Modding Wiki</title>
+  <meta name="description" content="Build a complete read-only Lua inspector, file by file, and interpret the results.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="workshop-inspector" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Build a weapon inspector</h1><p class="lead">A complete, read-only example that connects settings, keybinds, game-thread work and weapon inspection.</p>
+<h2 id="what-you-will-build">What you will build</h2><p>Press one key to print a snapshot to UE4SS.log: the current world, the equipped weapon or visible workbench-editor candidates, selected raw stats and a bounded list of child actors. The example contains no attachment setter, score award, save/apply operation or travel action.</p><p><a href="../assets/downloads/WorkshopInspector-example.zip" download>Download the WorkshopInspector example</a>. You can also open the individual source files below. This is teaching code adapted from the recorded local demo patterns, not a guarantee for every game or UE4SS build.</p>
+<h2 id="prerequisites">Before you start</h2><ul><li>A working <a href="installation.html">UE4SS installation</a> and a known log location.</li><li>The <a href="first-mod.html">first mod</a> startup check completed.</li><li>An unused key; the example defaults to F9.</li><li>A workbench attachment editor or a gun equipped in a range.</li></ul><p>Close the game while creating or editing files. Keep this folder separate from other mods; do not merge its scripts into another mod’s Scripts folder.</p>
+<h2 id="create-the-layout">1. Create the layout</h2>
+<pre data-title="The final installed layout" data-language="text"><code>ue4ss/Mods/WorkshopInspector/
+├── enabled.txt
+├── README.md
+└── Scripts/
+    ├── main.lua
+    ├── config.lua
+    ├── log.lua
+    └── inspect.lua</code></pre>
+<p>The archive uses a mod-folder root. Extract it into <code>ue4ss/Mods</code>, not into Scripts and not into a second WorkshopInspector directory. Check that the final path ends in <code>WorkshopInspector/Scripts/main.lua</code>.</p>
+<h2 id="configure-the-example">2. Add configuration</h2>
+<pre data-example="WorkshopInspector/Scripts/config.lua" data-title="Scripts/config.lua" data-language="lua"><code>return {
+    Enabled = true,
+    KeyName = &quot;F9&quot;,
+    MaxParts = 12,
+    MaxEditors = 8
+}
+</code></pre>
+<p><a href="../assets/examples/WorkshopInspector/Scripts/config.lua">Open config.lua</a>. <code>Enabled</code> is a boolean. <code>KeyName</code> names an entry in the loader’s Key table. <code>MaxParts</code> limits printed child names; it does not remove parts or limit the actual assembly. <code>MaxEditors</code> bounds the number of loaded editor candidates inspected.</p><p>These limits are deliberately small so a key press does not produce an unbounded log dump. Change them with the game closed and restart to load the new values.</p>
+<h2 id="add-logging">3. Add a logger</h2>
+<pre data-example="WorkshopInspector/Scripts/log.lua" data-title="Scripts/log.lua" data-language="lua"><code>local Log = {}
+
+function Log.info(message)
+    print(&quot;[WorkshopInspector] &quot; .. tostring(message) .. &quot;\n&quot;)
+end
+
+return Log
+</code></pre>
+<p><a href="../assets/examples/WorkshopInspector/Scripts/log.lua">Open log.lua</a>. One function gives every message the same prefix. <code>tostring</code> makes diagnostics tolerant of nil and non-string values. The newline is the Lua escape <code>\n</code>, not an actual line break inside the quoted source string.</p>
+<h2 id="read-engine-state">4. Read engine state</h2>
+<pre data-example="WorkshopInspector/Scripts/inspect.lua" data-title="Scripts/inspect.lua" data-language="lua"><code>local H = require(&quot;UEHelpers&quot;)
+local Inspect = {}
+
+local function valid(object)
+    if object == nil then return false end
+    local ok, result = pcall(function() return object:IsValid() end)
+    return ok and result == true
+end
+
+local function object(value)
+    if valid(value) then return value end
+    local ok, result = pcall(function() return value:get() end)
+    if ok and valid(result) then return result end
+end
+
+local function name(value)
+    if not valid(value) then return &quot;&lt;unavailable&gt;&quot; end
+    return value:GetFullName() or &quot;&lt;unnamed&gt;&quot;
+end
+
+function Inspect.capture(config)
+    local lines = {}
+    local function add(text) lines[#lines + 1] = text end
+    local viewport = H.GetGameViewportClient()
+    if not valid(viewport) then return {&quot;Viewport is not ready.&quot;} end
+    local world = viewport:GetWorld()
+    if not valid(world) then return {&quot;World is not ready.&quot;} end
+    add(&quot;World: &quot; .. name(world))
+
+    local gameplay = StaticFindObject(&quot;/Script/Engine.Default__GameplayStatics&quot;)
+    if not valid(gameplay) then return {&quot;GameplayStatics is unavailable.&quot;} end
+    local pc = gameplay:GetPlayerController(world, 0)
+    if not valid(pc) then
+        add(&quot;Local controller is not ready.&quot;)
+        return lines
+    end
+
+    local function describe(gun, label)
+        if not valid(gun) then return end
+        add(label .. &quot;: &quot; .. name(gun))
+        for _, field in ipairs({&quot;TotalErgo&quot;, &quot;TotalInstalledErgo&quot;, &quot;TotalRecoilControlModifier&quot;}) do
+            local ok, value = pcall(function() return gun[field] end)
+            if ok and type(value) == &quot;number&quot; then
+                add(string.format(&quot;  %s = %.6f&quot;, field, value))
+            else
+                add(&quot;  &quot; .. field .. &quot; = &lt;unavailable&gt;&quot;)
+            end
+        end
+        local children = {}
+        gun:GetAllChildActors(children, true)
+        add(&quot;  Child actors reported: &quot; .. tostring(#children))
+        for i = 1, math.min(#children, config.MaxParts) do
+            local child = object(children[i])
+            if child then add(&quot;  Part &quot; .. i .. &quot;: &quot; .. name(child)) end
+        end
+        if #children &gt; config.MaxParts then add(&quot;  Remaining part names omitted by MaxParts.&quot;) end
+    end
+
+    local described = 0
+    local pawn = pc:K2_GetPawn()
+    if valid(pawn) then
+        local ok, gun = pcall(function() return pawn.EquippedWeapon end)
+        if ok and valid(gun) then describe(gun, &quot;Equipped weapon&quot;); described = described + 1 end
+    end
+
+    local editors = FindAllOf(&quot;WeaponEditMOde_C&quot;) or {}
+    for i = 1, math.min(#editors, config.MaxEditors) do
+        local editor = object(editors[i])
+        if editor then
+            local ok, visible = pcall(function() return editor:IsVisible() end)
+            if ok and visible then
+                add(&quot;Visible editor candidate: &quot; .. name(editor))
+                describe(editor.CurrentWeapon, &quot;Workbench weapon&quot;)
+                described = described + 1
+            end
+        end
+    end
+    if described == 0 then add(&quot;No equipped gun or visible workshop editor found.&quot;) end
+    add(&quot;Snapshot finished. No parts, stats or saves were changed by this example.&quot;)
+    return lines
+end
+
+return Inspect
+</code></pre>
+<p><a href="../assets/examples/WorkshopInspector/Scripts/inspect.lua">Open inspect.lua</a>. Read this module in four stages:</p><ol><li><strong>Resolve the world.</strong> The viewport supplies the active world. A missing world produces a diagnostic result, not an attempt to use an invalid object.</li><li><strong>Resolve local context.</strong> GameplayStatics returns local controller zero. A pawn without EquippedWeapon is normal in some menus.</li><li><strong>Describe a gun.</strong> The module reads three numeric fields independently, then lists child actors up to MaxParts. An unavailable field is reported without writing a replacement value.</li><li><strong>Inspect editor candidates.</strong> Loaded visible WeaponEditMOde widgets can point at a workbench gun. A visible candidate is not proof of unique focus; several can be reported.</li></ol>
+<p>The wrapper helper accepts an ordinary valid UObject or tries to unwrap a parameter wrapper. The validity helper catches Lua failures while checking a reference. Neither helper protects against every native memory error, so the code still reacquires context for each snapshot instead of caching it across travel.</p>
+<h2 id="wire-startup">5. Wire startup and the keybind</h2>
+<pre data-example="WorkshopInspector/Scripts/main.lua" data-title="Scripts/main.lua" data-language="lua"><code>local Config = require(&quot;config&quot;)
+local Log = require(&quot;log&quot;)
+local Inspect = require(&quot;inspect&quot;)
+
+assert(type(Config.Enabled) == &quot;boolean&quot;, &quot;Enabled must be true or false&quot;)
+assert(type(Config.KeyName) == &quot;string&quot; and Key[Config.KeyName], &quot;KeyName is not a known key&quot;)
+for _, field in ipairs({&quot;MaxParts&quot;, &quot;MaxEditors&quot;}) do
+    local value = Config[field]
+    assert(type(value) == &quot;number&quot; and value % 1 == 0 and value &gt;= 1 and value &lt;= 64,
+        field .. &quot; must be an integer from 1 to 64&quot;)
+end
+
+if not Config.Enabled then
+    Log.info(&quot;Disabled in config.lua.&quot;)
+    return
+end
+
+local queued = false
+RegisterKeyBind(Key[Config.KeyName], function()
+    if queued then return end
+    queued = true
+    ExecuteInGameThread(function()
+        local ok, result = xpcall(function()
+            return Inspect.capture(Config)
+        end, debug.traceback)
+        queued = false
+        if not ok then Log.info(&quot;Snapshot failed: &quot; .. tostring(result)); return end
+        for _, line in ipairs(result) do Log.info(line) end
+    end)
+end)
+
+Log.info(&quot;Example loaded. Press &quot; .. Config.KeyName .. &quot; while the game is focused.&quot;)
+</code></pre>
+<p><a href="../assets/examples/WorkshopInspector/Scripts/main.lua">Open main.lua</a>. Startup validates settings before registering work. The key callback sets a pending flag and queues engine access on the game thread. The flag is released whether the Lua operation succeeds or fails. The logger prints the collected result only after the snapshot function returns.</p><p>This prevents overlapping queued snapshots. It is not a general-purpose task cancellation system. There is no automatic retry loop because the next key press reacquires the current world and objects.</p>
+<h2 id="run-and-interpret">6. Run and interpret the output</h2><ol><li>Start the game and find <code>[WorkshopInspector] Example loaded.</code> in the log.</li><li>Open the workbench attachment editor or equip a gun in a range.</li><li>Focus the game window and press the configured key once.</li><li>Search for the next <code>[WorkshopInspector] World:</code> message.</li><li>Compare object names and raw field values, not just the number of printed lines.</li></ol>
+<pre data-title="Illustrative output shape, not a captured game result" data-language="text"><code>[WorkshopInspector] World: &lt;current world full name&gt;
+[WorkshopInspector] Equipped weapon: &lt;live weapon full name&gt;
+[WorkshopInspector]   TotalErgo = &lt;raw numeric value&gt;
+[WorkshopInspector]   TotalInstalledErgo = &lt;raw numeric value&gt;
+[WorkshopInspector]   Child actors reported: &lt;count&gt;</code></pre>
+<p>The workbench route reports a visible editor candidate and a Workbench weapon instead of requiring an Equipped weapon line. A negative raw stat is not automatically a bug; see <a href="weapon-stats.html">Weapon stats</a>.</p>
+<h2 id="troubleshoot-the-example">7. Troubleshoot</h2>
+<div class="table-scroll"><table><thead><tr><th>Result</th><th>Next check</th></tr></thead><tbody><tr><td>No startup line</td><td>Check enabled.txt, filename extensions, archive root and the fresh loader log.</td></tr><tr><td>Key does nothing</td><td>Focus the game; check the configured key and conflicts; confirm main.lua loaded.</td></tr><tr><td>Viewport/controller not ready</td><td>Wait until the game has entered a playable menu or range, then press again.</td></tr><tr><td>No weapon/editor found</td><td>Open the actual attachment editor or equip a gun; inspect build-specific class names.</td></tr><tr><td>Stat unavailable</td><td>Confirm that field exists on the actual weapon class in your build.</td></tr><tr><td>Snapshot failed</td><td>Read the traceback; isolate the operation before changing the rest of the module.</td></tr></tbody></table></div>
+<h2 id="extend-it-carefully">8. Extend one thing at a time</h2><p>A useful next step is to collect two snapshots and compare a stat before and after a normal attachment action. Keep only ordinary Lua values, not live actor pointers, in that comparison. Report a changed world or weapon as a different context rather than subtracting unrelated values.</p><p>For a UI overlay, keep capture separate from rendering and bound its update rate. For a release, follow <a href="packaging.html">Packaging a Lua mod</a>. Do not turn this read-only example into an automatic mutation script without adding a clear action, cancellation and recovery flow.</p>
+<h2 id="verification-limit">Verification limits</h2><p>The game-facing names and integration patterns come from local demo source and earlier native checks. Any mock checks of these files only validate the Lua/control flow they exercise; they do not prove that an actual workbench widget or a future build returns the same data. Use <a href="testing.html">Test a mod step by step</a> to record a real run.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> &middot; <a href="installation.html">Installing UE4SS</a> &middot; <a href="first-mod.html">Your first mod</a> &middot; <a href="lua-basics.html">Lua basics for modding</a> &middot; <a href="project-structure.html">Organising a mod</a> &middot; <a href="changelog.html">Changelog</a> &middot; <a href="hooks.html">Working with hooks</a> &middot; <a href="objects.html">Finding game objects</a> &middot; <a href="runtime.html">Timers &amp; cleanup</a> &middot; <a href="data-tables.html">Reading data tables</a> &middot; <a href="debugging.html">Debugging</a> &middot; <a href="performance.html">Performance &amp; profiling</a> &middot; <a href="workshop-inspector.html">Build a weapon inspector</a> &middot; <a href="testing.html">Test a mod step by step</a> &middot; <a href="weapons.html">Weapon assemblies</a> &middot; <a href="attachments.html">Attachments &amp; rails</a> &middot; <a href="weapon-stats.html">Weapon stats</a> &middot; <a href="ballistics.html">Shots &amp; ballistics</a> &middot; <a href="targets.html">Finding &amp; tracking targets</a> &middot; <a href="scoring.html">Hits &amp; scoring</a> &middot; <a href="ranges.html">Range menus &amp; travel</a> &middot; <a href="workshop-ui.html">Workshop UI</a> &middot; <a href="progression.html">Ownership &amp; unlocks</a> &middot; <a href="saves.html">Reading &amp; backing up saves</a> &middot; <a href="multiplayer.html">Multiplayer architecture</a> &middot; <a href="paths.html">Game paths &amp; classes</a> &middot; <a href="custom-content.html">Custom content</a> &middot; <a href="packaging.html">Packaging a Lua mod</a> &middot; <a href="compatibility.html">Checking game updates</a> &middot; <a href="coverage.html">Coverage &amp; testing notes</a> &middot; <a href="tools.html">Tools &amp; resources</a></p></noscript>
+</body>
+</html>

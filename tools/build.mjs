@@ -2,6 +2,7 @@ import {readFile,writeFile,readdir,mkdir,cp,stat} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {runInNewContext} from 'node:vm';
+import {packageExample} from './package-example.mjs';
 const root=path.resolve(fileURLToPath(new URL('../',import.meta.url)));
 const context={window:{}};
 runInNewContext(await readFile(path.join(root,'assets/js/navigation.js'),'utf8'),context);
@@ -14,10 +15,20 @@ for(const row of navigation){
  listed.add(row[0]);
 }
 const pages=await readdir(path.join(root,'docs'));
+await packageExample(root);
 const entries=[];
 const decode=s=>s.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&');
+const escape=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 for(const name of pages.filter(f=>f.endsWith('.html'))){
- const filename=path.join(root,'docs',name),html=await readFile(filename,'utf8');
+ const filename=path.join(root,'docs',name);let html=await readFile(filename,'utf8');
+ let synced=html;
+ for(const match of html.matchAll(/<pre\b[^>]*\bdata-example="([^"]+)"[^>]*><code>[\s\S]*?<\/code><\/pre>/g)){
+  if(!/^[A-Za-z0-9_/-]+\.lua$/.test(match[1]))throw Error('Invalid example path');
+  const source=await readFile(path.join(root,'assets/examples',match[1]),'utf8');
+  const block=match[0].replace(/<code>[\s\S]*?<\/code>/,()=>'<code>'+escape(source)+'</code>');
+  synced=synced.replace(match[0],()=>block);
+ }
+ if(synced!==html){await writeFile(filename,synced);html=synced;}
  const id=html.match(/data-page="([^"]+)"/)?.[1];
  const title=decode(html.match(/<h1>([\s\S]*?)<\/h1>/)?.[1]||'');
  const body=html.match(/<article>([\s\S]*?)<\/article>/)?.[1];

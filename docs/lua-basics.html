@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lua basics for modding | Ballistic Modding Wiki</title>
+  <meta name="description" content="Learn the Lua syntax needed to read and write UE4SS examples.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="lua-basics" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Lua basics for modding</h1><p class="lead">Understand the language before adding Unreal objects to the mix.</p>
+<h2 id="before-you-start">Before you start</h2><p>Finish <a href="first-mod.html">Your first mod</a> so you have a script whose log message you can find. Use a disposable test mod for the snippets here. Copy one example at a time, restart, and compare its output with the explanation before combining examples.</p><p>The examples use Lua, as loaded by UE4SS. Luau is a related language with different features; don’t paste Roblox services, Luau type annotations or Roblox instance APIs into a UE4SS script and expect them to exist.</p>
+<h2 id="values-and-locals">1. Values and local variables</h2>
+<pre data-title="Basic values" data-language="lua"><code>local enabled = true
+local sampleLimit = 12
+local label = &quot;My mod&quot;
+local currentWeapon = nil
+
+print(label .. &quot;: &quot; .. tostring(sampleLimit) .. &quot;\n&quot;)</code></pre>
+<p><code>local</code> limits a variable to its surrounding scope. <code>true</code> and <code>false</code> are booleans; <code>12</code> is a number; quoted text is a string; <code>nil</code> means no value. Two dots join strings. Use <code>tostring</code> when a value might be a number, boolean or nil.</p><p>Lua treats only <code>false</code> and <code>nil</code> as false in a condition. The number <code>0</code> and an empty string are both truthy. If a setting must be a boolean, validate its type instead of assuming that zero disables it.</p>
+<h2 id="conditions-and-early-returns">2. Conditions and early returns</h2>
+<pre data-title="Return before doing work that requires a value" data-language="lua"><code>local function describe(value)
+    if value == nil then return &quot;No value&quot; end
+    if type(value) ~= &quot;number&quot; then return &quot;Not a number&quot; end
+    if value &lt; 0 then return &quot;Negative number&quot; end
+    return &quot;Zero or positive number&quot;
+end
+
+print(describe(nil) .. &quot;\n&quot;)
+print(describe(-2) .. &quot;\n&quot;)</code></pre>
+<p>Expected output is <code>No value</code>, then <code>Negative number</code>. <code>==</code> compares values; <code>=</code> assigns a value; <code>~=</code> means not equal. Each <code>if</code> needs <code>then</code> and <code>end</code>. Early returns make object checks easier to read because the main operation does not sit inside several nested conditions.</p>
+<h2 id="functions-and-callbacks">3. Functions and callbacks</h2><p>A function is a value you can call or hand to another function. A callback is a function handed to something that runs it later. Do not call the callback while registering it.</p>
+<pre data-title="Pass the function, not its return value" data-language="lua"><code>local function onPressed()
+    print(&quot;[MyMod] Key callback ran.\n&quot;)
+end
+
+RegisterKeyBind(Key.F9, onPressed)
+-- Do not write RegisterKeyBind(Key.F9, onPressed()).</code></pre>
+<p>The final comment shows a common mistake: the parentheses execute <code>onPressed</code> immediately, then pass its result to RegisterKeyBind. Without the parentheses, the function itself is registered. Choose a key not already used by another mod.</p>
+<h2 id="tables-and-loops">4. Tables and loops</h2>
+<pre data-title="An ordinary Lua list and a keyed table" data-language="lua"><code>local names = {&quot;barrel&quot;, &quot;rail&quot;, &quot;grip&quot;}
+for i, name in ipairs(names) do
+    print(i .. &quot;: &quot; .. name .. &quot;\n&quot;)
+end
+
+local settings = {Enabled = true, MaxParts = 12}
+print(tostring(settings.MaxParts) .. &quot;\n&quot;)</code></pre>
+<p>Ordinary Lua list indices conventionally start at one. <code>ipairs</code> walks a dense sequence until the first nil. A keyed table is useful for settings or named state. <code>settings.MaxParts</code> is shorthand for <code>settings["MaxParts"]</code>.</p><p>These rules describe Lua tables. A UE4SS wrapper for an Unreal array, set or map is a different object with its own supported operations. Don’t use a table example as proof that an engine container supports the same iterator. See <a href="objects.html#arrays-and-containers">Arrays and containers</a>.</p>
+<h2 id="dot-versus-colon">5. Dot versus colon</h2>
+<pre data-title="The colon supplies self" data-language="lua"><code>local counter = {value = 0}
+function counter:add(amount)
+    self.value = self.value + amount
+end
+
+counter:add(3)
+-- Equivalent ordinary Lua call: counter.add(counter, 3)
+print(counter.value .. &quot;\n&quot;)</code></pre>
+<p>A colon call supplies the receiver as the first argument. Use the form expected by the API you’re calling. <code>object:IsValid()</code> and <code>module.create()</code> are not interchangeable conventions. In engine bindings, an incorrectly called function can fail before your intended operation happens.</p>
+<h2 id="errors-and-types">6. Errors and type checks</h2><p>A syntax error prevents the chunk from loading. A runtime error occurs while executing a loaded chunk. If a variable is nil, ask why it never received a value rather than adding a default that hides the missing object.</p><p><code>pcall</code> returns a success boolean followed by the result or error. It catches Lua errors, not every native access violation. <code>assert</code> is useful for rejecting an invalid configuration immediately; it is less helpful as a replacement for waiting for an expected menu to load.</p>
+<h2 id="practice-before-engine-work">Practice before engine work</h2><ol><li>Change the sample limit and predict the output.</li><li>Pass a string to <code>describe</code> and confirm the type branch.</li><li>Make a list of three labels and print each once.</li><li>Put the counter in its own module, following <a href="project-structure.html">Organising a mod</a>.</li><li>Only then introduce a real weapon or widget reference.</li></ol><p>If a plain Lua example fails, solve that first. Adding Unreal state makes a language mistake harder to isolate.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> &middot; <a href="installation.html">Installing UE4SS</a> &middot; <a href="first-mod.html">Your first mod</a> &middot; <a href="lua-basics.html">Lua basics for modding</a> &middot; <a href="project-structure.html">Organising a mod</a> &middot; <a href="changelog.html">Changelog</a> &middot; <a href="hooks.html">Working with hooks</a> &middot; <a href="objects.html">Finding game objects</a> &middot; <a href="runtime.html">Timers &amp; cleanup</a> &middot; <a href="data-tables.html">Reading data tables</a> &middot; <a href="debugging.html">Debugging</a> &middot; <a href="performance.html">Performance &amp; profiling</a> &middot; <a href="workshop-inspector.html">Build a weapon inspector</a> &middot; <a href="testing.html">Test a mod step by step</a> &middot; <a href="weapons.html">Weapon assemblies</a> &middot; <a href="attachments.html">Attachments &amp; rails</a> &middot; <a href="weapon-stats.html">Weapon stats</a> &middot; <a href="ballistics.html">Shots &amp; ballistics</a> &middot; <a href="targets.html">Finding &amp; tracking targets</a> &middot; <a href="scoring.html">Hits &amp; scoring</a> &middot; <a href="ranges.html">Range menus &amp; travel</a> &middot; <a href="workshop-ui.html">Workshop UI</a> &middot; <a href="progression.html">Ownership &amp; unlocks</a> &middot; <a href="saves.html">Reading &amp; backing up saves</a> &middot; <a href="multiplayer.html">Multiplayer architecture</a> &middot; <a href="paths.html">Game paths &amp; classes</a> &middot; <a href="custom-content.html">Custom content</a> &middot; <a href="packaging.html">Packaging a Lua mod</a> &middot; <a href="compatibility.html">Checking game updates</a> &middot; <a href="coverage.html">Coverage &amp; testing notes</a> &middot; <a href="tools.html">Tools &amp; resources</a></p></noscript>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Performance &amp; profiling | Ballistic Modding Wiki</title>
+  <meta name="description" content="Measure engine calls, bound discovery and avoid making visual updates expensive.">
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+  <script src="../assets/js/theme.js"></script>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/search-index.js" defer></script>
+  <script src="../assets/js/navigation.js" defer></script>
+  <script src="../assets/js/site.js" defer></script>
+</head>
+<body data-page="performance" id="top">
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div id="site-header"></div>
+  <div id="sidebar"></div>
+  <div class="page-layout">
+    <main class="page-main" id="content" tabindex="-1">
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Breadcrumb"></nav>
+      <article>
+<h1>Performance &amp; profiling</h1><p class="lead">Measure the expensive boundary between Lua and the engine before changing update rates.</p>
+<h2 id="make-a-baseline">1. Make a baseline</h2><p>Record the game scene, mod configuration and action sequence. Compare the same range and weapon with the feature disabled and enabled. A different target layout or gun assembly can change workload enough to invalidate the comparison.</p><p>Separate idle cost from action cost. A UI might be cheap while closed but hitch when rebuilding every widget after a click. An actor registry might be cheap to update but expensive to rediscover.</p>
+<h2 id="count-work">2. Count work before timing it</h2>
+<pre data-title="Increment these at the operations you actually perform" data-language="lua"><code>local counters = {discoveries = 0, samples = 0, setters = 0}
+
+local function report()
+    print(string.format(
+        &quot;[MyMod] discoveries=%d samples=%d setters=%d\n&quot;,
+        counters.discoveries, counters.samples, counters.setters
+    ))
+end</code></pre>
+<p>For an unchanged menu, how many labels are set again each second? For a static target, how often do you reload its mesh? A counter often exposes redundant work before a profiler is needed.</p><p>Report periodically, not on every frame. Logging can become part of the hitch you are trying to diagnose.</p>
+<h2 id="separate-cadences">3. Give tasks different cadences</h2>
+<div class="table-scroll"><table><thead><tr><th>Work</th><th>Reasonable starting approach</th></tr></thead><tbody><tr><td>Find loaded classes</td><td>Slow retry until ready; stop once installed.</td></tr><tr><td>Rediscover a target registry</td><td>Occasional refresh plus world-change invalidation.</td></tr><tr><td>Update known moving actors</td><td>Bounded frequent samples.</td></tr><tr><td>Render interpolated visuals</td><td>A local visual cadence independent of network sends.</td></tr><tr><td>Capture weapon meshes</td><td>On identity changes, with a slower periodic verification.</td></tr></tbody></table></div>
+<p>These are design starting points, not universal tick rates. Measure your scene and adjust the budget. Reducing cosmetic updates must not silently reduce gameplay-event reliability.</p>
+<h2 id="schedule-without-bursts">4. Avoid catch-up bursts</h2><p>A stalled frame can leave several nominal deadlines behind. For a cosmetic update, replaying all missed steps in one frame makes the stall worse. Advance from elapsed time and cap work instead.</p>
+<pre data-title="Pure Lua cadence gate; use a validated positive rate" data-language="lua"><code>local nextUpdate = nil
+local lastNow = nil
+
+local function shouldUpdate(now, rate)
+    local period = 1 / rate
+    if not nextUpdate or not lastNow or now &lt; lastNow then
+        nextUpdate = now
+    end
+    lastNow = now
+    if now &lt; nextUpdate then return false end
+    nextUpdate = math.max(nextUpdate + period, now + period * 0.1)
+    return true
+end</code></pre>
+<p>Call this with one coherent clock. The backwards-clock branch matters after a world reset when a world-relative clock starts over. A setting change should explicitly reset the schedule too, rather than waiting on a deadline calculated for the old rate.</p>
+<h2 id="reuse-engine-objects">5. Reuse unchanged engine objects</h2><p>Cache asset references after successful loading. For a weapon proxy, compare the mesh identity before replacing an actor. For a menu, compare the intended text, enabled state and visibility with the last successful values before issuing setters.</p><p>Only mark a cached value as applied after the setter succeeds. If a native operation fails, caching the desired value too early can prevent the retry that would restore the UI.</p>
+<h2 id="budget-large-registries">6. Budget large registries</h2><p>Process a fixed number of ordinary targets per update and carry a cursor forward. Prioritise moving or recently hit targets separately, with its own cap. Without the second cap, “priority” can grow into another unbounded full-world pass.</p><p>Keep event queues bounded and define backpressure. Silently dropping a cosmetic sample is different from dropping an acknowledged hit or save-transfer chunk.</p>
+<h2 id="verify-the-improvement">Verify the improvement</h2><p>Repeat the baseline sequence, compare counters, and check that the feature still works after travel, a missing object and a setter failure. Faster code that displays stale state is not a successful optimisation.</p>
+      </article>
+      <div id="page-end"></div>
+    </main>
+    <aside id="page-toc"></aside>
+  </div>
+  <noscript><p>JavaScript adds navigation and search. <a href="introduction.html">Introduction</a> &middot; <a href="installation.html">Installing UE4SS</a> &middot; <a href="first-mod.html">Your first mod</a> &middot; <a href="lua-basics.html">Lua basics for modding</a> &middot; <a href="project-structure.html">Organising a mod</a> &middot; <a href="changelog.html">Changelog</a> &middot; <a href="hooks.html">Working with hooks</a> &middot; <a href="objects.html">Finding game objects</a> &middot; <a href="runtime.html">Timers &amp; cleanup</a> &middot; <a href="data-tables.html">Reading data tables</a> &middot; <a href="debugging.html">Debugging</a> &middot; <a href="performance.html">Performance &amp; profiling</a> &middot; <a href="workshop-inspector.html">Build a weapon inspector</a> &middot; <a href="testing.html">Test a mod step by step</a> &middot; <a href="weapons.html">Weapon assemblies</a> &middot; <a href="attachments.html">Attachments &amp; rails</a> &middot; <a href="weapon-stats.html">Weapon stats</a> &middot; <a href="ballistics.html">Shots &amp; ballistics</a> &middot; <a href="targets.html">Finding &amp; tracking targets</a> &middot; <a href="scoring.html">Hits &amp; scoring</a> &middot; <a href="ranges.html">Range menus &amp; travel</a> &middot; <a href="workshop-ui.html">Workshop UI</a> &middot; <a href="progression.html">Ownership &amp; unlocks</a> &middot; <a href="saves.html">Reading &amp; backing up saves</a> &middot; <a href="multiplayer.html">Multiplayer architecture</a> &middot; <a href="paths.html">Game paths &amp; classes</a> &middot; <a href="custom-content.html">Custom content</a> &middot; <a href="packaging.html">Packaging a Lua mod</a> &middot; <a href="compatibility.html">Checking game updates</a> &middot; <a href="coverage.html">Coverage &amp; testing notes</a> &middot; <a href="tools.html">Tools &amp; resources</a></p></noscript>
+</body>
+</html>
