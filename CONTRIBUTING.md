@@ -24,6 +24,8 @@ Write like you’re explaining it to another modder. Get to the steps, use real 
 - Give examples their prerequisites, expected result and failure checks. Label fragments with the variables they require; don’t present illustrative output as a captured game test.
 - For code blocks marked `data-example`, edit the matching source under `assets/examples/` and run the build. It syncs those blocks and rebuilds the inspector download. Don’t maintain a second hand-edited copy in the article.
 - Edit the generated hook catalog through `assets/data/observed-hooks.json`. Keep stable entry IDs, exact paths and honest evidence labels. A dump match alone is not a runtime test.
+- The broad API catalog is generated from `assets/data/game-api.json`. Review source date, build provenance and exact names when importing a new dump. Function fields may include locals; don't present them as verified positional arguments.
+- Run the build after adding pages: README counts, the guide index and fallback navigation are generated. Review `assets/data/coverage.json` separately; more pages do not automatically mean more verified game behaviour.
 
 ## Game-specific findings
 
@@ -35,6 +37,6 @@ Link to the original documentation when it helps. Don’t include game assets, s
 
 Make sure the check passes, links work, and code examples still copy correctly. Mention anything you couldn’t verify. Leave generated builds, browser profiles and other local files out of the PR.
 
-Add a short entry under **Next update** in `docs/changelog.html` for new guides, useful corrections or site changes. Use **Added**, **Changed** or **Fixed** as needed; skip empty categories. Describe what changed for someone reading the wiki, rather than listing implementation steps. Typo-only fixes don’t need an entry.
+Add a short entry under the current dated update in `docs/changelog.html` for new guides, useful corrections or site changes. Use **Added**, **Changed** or **Fixed** as needed; skip empty categories. Describe what changed for someone reading the wiki, rather than listing implementation steps. Typo-only fixes don’t need an entry.
 
-When publishing an update, give that section a date, move it above the older entries, and leave a fresh **Next update** section at the top. Keep the existing history.
+Use the actual update date, with the newest entries first. For a separate update on the same day, add another dated section with a short title, such as **8 November 2026 — General update**. Give each section a unique anchor, keep the existing history and don't add an empty future-update placeholder.

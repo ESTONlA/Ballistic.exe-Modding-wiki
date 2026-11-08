@@ -27,12 +27,7 @@
   const title = document.createElement('div'); title.className = 'article-title'; h1.before(title); title.append(h1);
   const copyLink = document.createElement('button'); copyLink.className = 'icon-button article-tools'; copyLink.setAttribute('aria-label','Copy page link'); copyLink.innerHTML = icon('link'); title.append(copyLink);
   const headings = [...article.querySelectorAll('h2,h3')];
-  const toc = headings.map(h => `<a href="#${h.id}">${esc(h.textContent)}</a>`).join('');
-  document.getElementById('page-toc').innerHTML = `<nav class="page-toc" aria-label="On this page"><p class="toc-label">In this article</p>${toc}<div class="toc-source">Need an API detail?<a href="https://docs.ue4ss.com/dev/" target="_blank" rel="noreferrer">UE4SS documentation ↗</a></div></nav>`;
-  if (headings.length) {
-    const mobileToc = document.createElement('details'); mobileToc.className = 'mobile-toc'; mobileToc.innerHTML = `<summary>In this article</summary>${toc}`;
-    article.before(mobileToc);
-  }
+  const outline = window.createArticleOutlines(headings, icon, esc);
   headings.forEach(h => { const a = document.createElement('a'); a.href = `#${h.id}`; a.className = 'heading-anchor'; a.textContent = '#'; a.setAttribute('aria-label',`Link to ${h.textContent}`); h.append(a); });
   const index = pages.indexOf(page), previous = pages[index-1], next = pages[index+1];
   document.getElementById('page-end').innerHTML = `<div class="page-bottom"><span>Examples based on the Ballistic.exe Demo</span><a href="#top">Back to top ↑</a></div><nav class="page-navigation" aria-label="Adjacent pages">${previous ? `<a href="${previous[0]}.html"><small>Previous</small>← ${previous[1]}</a>` : ''}${next ? `<a href="${next[0]}.html"><small>Next</small>${next[1]} →</a>` : ''}</nav><footer class="site-footer">Ballistic Modding Wiki · Independent documentation. Not affiliated with Tic Tac Toe Digital.</footer>`;
@@ -143,7 +138,6 @@
     if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openSearch(); }
     if(e.key === '/' && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName) && !document.activeElement.isContentEditable) { e.preventDefault(); openSearch(); }
   });
-  const tocLinks = [...document.querySelectorAll('.page-toc nav a, .page-toc > a')];
   let tocQueued = false, activeHeading = '';
   function updateToc() {
     tocQueued = false;
@@ -156,16 +150,31 @@
     if (scrollY + innerHeight >= document.documentElement.scrollHeight - 2) current = headings[headings.length - 1];
     if (activeHeading === current.id) return;
     activeHeading = current.id;
-    tocLinks.forEach(a => a.classList.toggle('active',a.hash === `#${activeHeading}`));
+    outline.update(current, headings.indexOf(current));
   }
   function queueTocUpdate() {
     if (tocQueued) return;
     tocQueued = true;
     requestAnimationFrame(updateToc);
   }
+  function revealHashDetails() {
+    let target;
+    try { target = document.getElementById(decodeURIComponent(location.hash.slice(1))); } catch { return; }
+    if (!target) return;
+    let parent = target.closest('details'), opened = false;
+    while (parent) {
+      if (!parent.open) { parent.open = true; opened = true; }
+      parent = parent.parentElement?.closest('details');
+    }
+    if (opened) requestAnimationFrame(() => target.scrollIntoView({block:'start'}));
+  }
   window.addEventListener('scroll',queueTocUpdate,{passive:true});
-  window.addEventListener('resize',queueTocUpdate);
-  window.addEventListener('hashchange',queueTocUpdate);
+  window.addEventListener('resize',() => {
+    queueTocUpdate();
+    requestAnimationFrame(() => outline.reveal?.());
+  });
+  window.addEventListener('hashchange',() => { revealHashDetails(); queueTocUpdate(); });
+  revealHashDetails();
   queueTocUpdate();
   if(innerWidth > 760)requestAnimationFrame(() => document.querySelector('.sidebar [aria-current="page"]')?.scrollIntoView({block:'nearest'}));
 })();
